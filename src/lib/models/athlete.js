@@ -91,7 +91,7 @@ export async function updateAthleteTokens(stravaId, accessToken, refreshToken, e
     const collection = await getAthletesCollection();
 
     await collection.updateOne(
-        { stravaId },
+        { stravaId: Number(stravaId) },
         {
             $set: {
                 accessToken,
