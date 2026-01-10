@@ -45,7 +45,7 @@ export async function getAthletesCollection() {
  */
 export async function findAthleteByStravaId(stravaId) {
     const collection = await getAthletesCollection();
-    return collection.findOne({ stravaId });
+    return collection.findOne({ stravaId: Number(stravaId) });
 }
 
 /**
