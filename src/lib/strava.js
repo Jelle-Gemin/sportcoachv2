@@ -173,3 +173,113 @@ export async function getActivities(accessToken, options = {}) {
 
     return response.json();
 }
+
+/**
+ * Fetch detailed activity data from Strava
+ * @param {string} accessToken 
+ * @param {number} activityId 
+ * @returns {Promise<Object>}
+ */
+export async function getActivityDetail(accessToken, activityId) {
+    const response = await fetch(`${STRAVA_API_BASE}/activities/${activityId}`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to fetch activity detail: ${error}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Fetch activity laps from Strava
+ * @param {string} accessToken 
+ * @param {number} activityId 
+ * @returns {Promise<Array>}
+ */
+export async function getActivityLaps(accessToken, activityId) {
+    const response = await fetch(`${STRAVA_API_BASE}/activities/${activityId}/laps`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to fetch activity laps: ${error}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Fetch activity streams from Strava (time-series data)
+ * Excludes GPS data (latlng) to reduce storage size
+ * @param {string} accessToken 
+ * @param {number} activityId 
+ * @returns {Promise<Object>} Streams object with time, heartrate, watts, cadence, altitude, velocity_smooth, grade_smooth
+ */
+export async function getActivityStreams(accessToken, activityId) {
+    // Request all streams except latlng (GPS)
+    const streamTypes = [
+        'time',
+        'heartrate',
+        'watts',
+        'cadence',
+        'altitude',
+        'velocity_smooth',
+        'grade_smooth',
+    ].join(',');
+
+    const response = await fetch(
+        `${STRAVA_API_BASE}/activities/${activityId}/streams?keys=${streamTypes}&key_by_type=true`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        // Streams may not be available for all activities
+        if (response.status === 404) {
+            return {};
+        }
+        const error = await response.text();
+        throw new Error(`Failed to fetch activity streams: ${error}`);
+    }
+
+    const data = await response.json();
+
+    // Transform to a cleaner format with just the data arrays
+    const streams = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (value && value.data) {
+            streams[key] = value.data;
+        }
+    }
+
+    return streams;
+}
+
+/**
+ * Fetch complete activity with detail, laps, and streams
+ * Makes 3 API calls
+ * @param {string} accessToken 
+ * @param {number} activityId 
+ * @returns {Promise<{detail: Object, laps: Array, streams: Object}>}
+ */
+export async function getCompleteActivity(accessToken, activityId) {
+    const [detail, laps, streams] = await Promise.all([
+        getActivityDetail(accessToken, activityId),
+        getActivityLaps(accessToken, activityId),
+        getActivityStreams(accessToken, activityId),
+    ]);
+
+    return { detail, laps, streams };
+}
+
