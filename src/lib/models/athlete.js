@@ -59,7 +59,7 @@ export async function upsertAthlete(stravaId, data) {
 
     const now = new Date();
     const result = await collection.findOneAndUpdate(
-        { stravaId },
+        { stravaId: Number(stravaId) },
         {
             $set: {
                 ...data,
