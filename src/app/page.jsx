@@ -11,6 +11,7 @@ import { useActivities } from '@/hooks/useActivities';
 import { useDailyActivities } from '@/hooks/useDailyActivities';
 import { useDailyWorkout } from '@/hooks/useDailyWorkout';
 import { useWeeklyWorkouts } from '@/hooks/useWeeklyWorkouts';
+import { findMatchingPlannedWorkout } from '@/lib/utils/workoutComparison';
 
 export default function Home() {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -23,7 +24,23 @@ export default function Home() {
 
     // Fetch specific date data using new daily hooks
     const { activities: dailyActivities, loading: dailyLoading } = useDailyActivities(selectedDate);
-    const { workout, loading: workoutLoading } = useDailyWorkout(selectedDate);
+    const { workouts, loading: workoutLoading } = useDailyWorkout(selectedDate);
+
+    // Sort completed activities to match the order of prescribed workouts
+    const sortedActivities = React.useMemo(() => {
+        if (!dailyActivities || dailyActivities.length === 0) return [];
+        if (!workouts || workouts.length === 0) return dailyActivities;
+
+        return [...dailyActivities].sort((a, b) => {
+            const plannedA = findMatchingPlannedWorkout(workouts, a);
+            const plannedB = findMatchingPlannedWorkout(workouts, b);
+
+            const indexA = plannedA ? workouts.indexOf(plannedA) : Infinity;
+            const indexB = plannedB ? workouts.indexOf(plannedB) : Infinity;
+
+            return indexA - indexB;
+        });
+    }, [dailyActivities, workouts]);
 
     // Format header date
     const dateString = selectedDate.toLocaleDateString('en-US', {
@@ -84,22 +101,31 @@ export default function Home() {
 
                 {/* Daily Content Section */}
                 <div className="space-y-6">
-                    {/* Prescribed Workout */}
-                    {!workoutLoading && workout && (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <WorkoutCard workout={workout} />
-                            <ExecutionScore />
+                    {/* Prescribed Workout(s) */}
+                    {!workoutLoading && workouts && workouts.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                                {isToday ? "Planned Workouts" : `Planned for ${selectedDate.toLocaleDateString('en-US', { weekday: 'short' })}`}
+                            </h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {workouts.map((w, idx) => (
+                                    <React.Fragment key={`${w.fullDate}-${w.type}-${idx}`}>
+                                        <WorkoutCard workout={w} />
+                                        {idx === 0 && <ExecutionScore />}
+                                    </React.Fragment>
+                                ))}
+                            </div>
                         </div>
                     )}
 
                     {/* Completed Activities for Selected Date */}
-                    {!dailyLoading && dailyActivities && dailyActivities.length > 0 && (
+                    {!dailyLoading && sortedActivities && sortedActivities.length > 0 && (
                         <div className="space-y-4">
                             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
                                 {isToday ? "Today's Completed Activities" : `Activities for ${selectedDate.toLocaleDateString('en-US', { weekday: 'short' })}`}
                             </h3>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
-                                {dailyActivities.map((activity) => (
+                                {sortedActivities.map((activity) => (
                                     <TodayActivityCard key={activity.stravaId} activity={activity} />
                                 ))}
                             </div>
@@ -107,7 +133,7 @@ export default function Home() {
                     )}
 
                     {/* Empty state when no prescribed workout AND no activity */}
-                    {!workoutLoading && !workout && (!dailyActivities || dailyActivities.length === 0) && (
+                    {!workoutLoading && workouts.length === 0 && (!dailyActivities || dailyActivities.length === 0) && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
                             <WorkoutCard workout={null} />
                             <div className="lg:col-span-1 bg-[#0f172a] rounded-[2.5rem] border border-slate-800 p-8 flex items-center justify-center text-center">

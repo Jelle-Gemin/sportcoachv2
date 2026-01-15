@@ -1,9 +1,19 @@
 import React, { useMemo } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { RunIcon, SwimIcon, BikeIcon, GymIcon } from '../icons/SportIcons';
+import { RunIcon, SwimIcon, BikeIcon, GymIcon, SoccerIcon, MultiIcon } from '../icons/SportIcons';
 import { cn } from '../../lib/utils';
 
 const WeeklyRibbon = ({ activities = [], prescribedWorkouts = [], selectedDate, onDateSelect }) => {
+    // Group prescribed workouts by date for efficient lookup
+    const prescribedByDate = useMemo(() => {
+        const grouped = {};
+        prescribedWorkouts.forEach(pw => {
+            if (!grouped[pw.fullDate]) grouped[pw.fullDate] = [];
+            grouped[pw.fullDate].push(pw);
+        });
+        return grouped;
+    }, [prescribedWorkouts]);
+
     // Generate Mon-Sun week containing selectedDate
     const weekDays = useMemo(() => {
         const current = new Date(selectedDate);
@@ -27,31 +37,46 @@ const WeeklyRibbon = ({ activities = [], prescribedWorkouts = [], selectedDate, 
         });
     }, [selectedDate]);
 
-    // Calculate display schedule based on activities (for dots/indicators)
-    const schedule = weekDays.map((day, i) => {
-        const completedActivity = activities.find(a => {
-            const actDate = new Date(a.startDate);
-            return actDate.getDate() === day.dateObj.getDate() &&
-                actDate.getMonth() === day.dateObj.getMonth() &&
-                actDate.getFullYear() === day.dateObj.getFullYear();
+    // Calculate display schedule based on activities and grouped prescribed workouts
+    const schedule = weekDays.map((day) => {
+        const dailyActivities = activities.filter(a => {
+            if (!a.startDate) return false;
+            try {
+                const actDate = new Date(a.startDate).toISOString().split('T')[0];
+                return actDate === day.fullDate;
+            } catch (e) {
+                return false;
+            }
         });
 
-        // Match prescribed workout (assuming mock data is Mon-Sun)
-        const prescribed = prescribedWorkouts[i];
+        const dailyPrescribed = prescribedByDate[day.fullDate] || [];
+        const isCompleted = dailyActivities.length > 0;
+
+        // Determination logic for icon
+        let displayType = null;
+        if (dailyPrescribed.length > 1) {
+            displayType = 'Multi';
+        } else if (dailyPrescribed.length === 1) {
+            displayType = dailyPrescribed[0].type;
+        } else if (isCompleted) {
+            // Fallback to completed activity type if nothing prescribed
+            displayType = dailyActivities[0].type;
+        }
+
+        // Special handling for common alternatives
+        if (displayType === 'Gym' || displayType === 'Strength') displayType = 'Gym';
+        if (displayType === 'Ride' || displayType === 'VirtualRide') displayType = 'Bike';
 
         return {
             ...day,
-            completed: !!completedActivity,
-            prescribedType: prescribed?.type,
-            completedType: completedActivity?.type,
-            // If completed, use completed type (athlete might have swapped sports)
-            // If not, use prescribed type
-            displayType: completedActivity ? completedActivity.type : prescribed?.type
+            completed: isCompleted,
+            prescribedType: dailyPrescribed.length > 0 ? (dailyPrescribed.length > 1 ? 'Multi' : dailyPrescribed[0].type) : null,
+            displayType
         };
     });
 
     const getIcon = (type) => {
-        const iconClass = "w-5 h-5"; // Set consistent premium size
+        const iconClass = "w-5 h-5";
         switch (type) {
             case 'Run': return <RunIcon className={iconClass} />;
             case 'Swim': return <SwimIcon className={iconClass} />;
@@ -59,9 +84,13 @@ const WeeklyRibbon = ({ activities = [], prescribedWorkouts = [], selectedDate, 
             case 'Brick': return <BikeIcon className={iconClass} />;
             case 'Gym': return <GymIcon className={iconClass} />;
             case 'Strength': return <GymIcon className={iconClass} />;
-            default: return <span className="text-[10px] opacity-20">●</span>;
+            case 'Soccer': return <SoccerIcon className={iconClass} />;
+            case 'Multi': return <MultiIcon className={iconClass} />;
+            default: return null;
         }
     }
+
+
 
     // Handlers for navigating weeks
     const changeWeek = (offset) => {

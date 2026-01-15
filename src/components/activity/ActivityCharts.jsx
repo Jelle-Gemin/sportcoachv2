@@ -3,7 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { cn } from '@/lib/utils';
 
 const ActivityCharts = ({ streams, type }) => {
-    const [activeChart, setActiveChart] = useState(type === 'Run' ? 'pace' : 'power');
+    const [activeChart, setActiveChart] = useState(type === 'Run' || type === 'Swim' ? 'hr' : 'power');
 
     if (!streams || Object.keys(streams).length === 0) {
         return (

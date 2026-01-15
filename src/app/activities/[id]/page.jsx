@@ -6,13 +6,19 @@ import ActivityHeader from '@/components/activity/ActivityHeader';
 import ActivityCharts from '@/components/activity/ActivityCharts';
 import ActivityLaps from '@/components/activity/ActivityLaps';
 import ActivityActuals from '@/components/activity/ActivityActuals';
+import { weeklySchedule } from '@/data/mockData';
+import { calculateExecutionScore, findMatchingPlannedWorkout } from '@/lib/utils/workoutComparison';
+import { useAthlete } from '@/hooks/useAthlete';
 
 export default function ActivityDetails() {
     const params = useParams();
     const router = useRouter();
+    const { athlete } = useAthlete()
     const { id } = params;
 
     const [activity, setActivity] = useState(null);
+    const [plannedWorkout, setPlannedWorkout] = useState(null);
+    const [executionScore, setExecutionScore] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -45,6 +51,19 @@ export default function ActivityDetails() {
         fetchActivity();
     }, [id]);
 
+    // Recalculate score when activity or athlete data changes
+    useEffect(() => {
+        if (activity) {
+            const match = findMatchingPlannedWorkout(weeklySchedule, activity);
+            setPlannedWorkout(match);
+
+            if (match && athlete?.biometrics) {
+                const score = calculateExecutionScore(match, activity, athlete.biometrics.ftp);
+                setExecutionScore(score);
+            }
+        }
+    }, [activity, athlete]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -76,7 +95,11 @@ export default function ActivityDetails() {
     return (
         <div className="min-h-screen pb-20">
             <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
-                <ActivityHeader activity={activity} />
+                <ActivityHeader
+                    activity={activity}
+                    plannedWorkout={plannedWorkout}
+                    executionScore={executionScore}
+                />
                 <ActivityActuals activity={activity} onUpdate={setActivity} />
 
                 <div className="space-y-8">

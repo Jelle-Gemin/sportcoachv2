@@ -73,7 +73,7 @@ const ActivityLaps = ({ activity, onUpdate }) => {
                                 {type === 'Swim' ? 'Pace (100m)' : type === 'Run' ? 'Pace' : 'Speed'}
                             </th>
                             <th className="px-4 md:px-6 py-4">Avg HR</th>
-                            <th className="px-4 md:px-6 py-4">Avg Power</th>
+                            {type === 'Bike' && <th className="px-4 md:px-6 py-4">Avg Power</th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800">
@@ -84,7 +84,15 @@ const ActivityLaps = ({ activity, onUpdate }) => {
 
                             return (
                                 <tr key={idx} className="hover:bg-slate-800/20 transition-colors">
-                                    <td className="px-4 md:px-6 py-4 font-bold text-slate-400">{idx + 1}</td>
+                                    <td className="px-4 md:px-6 py-4 font-bold text-slate-400">
+                                        {idx + 1}
+                                        {lap.lapType && (
+                                            <span className={`ml-2 text-[10px] uppercase px-1.5 py-0.5 rounded ${lap.lapType === 'work' ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700/50 text-slate-500'
+                                                }`}>
+                                                {lap.lapType}
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="px-4 md:px-6 py-4 font-mono">{formatDuration(time)}</td>
                                     <td className="px-4 md:px-6 py-4">
                                         {type === 'Swim'
@@ -92,15 +100,16 @@ const ActivityLaps = ({ activity, onUpdate }) => {
                                             : `${(dist / 1000).toFixed(2)} km`
                                         }
                                     </td>
-                                    <td className="px-4 md:px-6 py-4 font-mono font-bold text-white">
+                                    <td className={`px-4 md:px-6 py-4 font-mono font-bold ${lap.lapType === 'rest' ? 'text-slate-500' : 'text-white'}`}>
                                         {formatSpeed(speed, type)}
                                     </td>
+
                                     <td className="px-4 md:px-6 py-4">
                                         {lap.averageHeartrate ? Math.round(lap.averageHeartrate) : '-'} <span className="text-xs text-slate-500">bpm</span>
                                     </td>
-                                    <td className="px-4 md:px-6 py-4">
+                                    {type === 'Bike' && <td className="px-4 md:px-6 py-4">
                                         {lap.averageWatts ? Math.round(lap.averageWatts) : '-'} <span className="text-xs text-slate-500">W</span>
-                                    </td>
+                                    </td>}
                                 </tr>
                             );
                         })}

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Metric from '@/components/ui/Metric';
 import { cn } from '@/lib/utils';
 
-const ActivityHeader = ({ activity }) => {
+const ActivityHeader = ({ activity, plannedWorkout, executionScore }) => {
     // Format helpers
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -65,8 +65,26 @@ const ActivityHeader = ({ activity }) => {
                         <p className="text-[10px] text-slate-500 font-bold uppercase">Calories</p>
                         <p className="text-xl font-bold text-white">{activity.calories || '--'}</p>
                     </div>
+                    {executionScore !== null && (
+                        <div className="flex-1 bg-blue-500/10 px-4 py-2 rounded-xl border border-blue-500/20 text-center shadow-lg shadow-blue-500/5">
+                            <p className="text-[10px] text-blue-400 font-bold uppercase">Exec. Score</p>
+                            <p className="text-2xl font-mono font-bold text-blue-400">
+                                {executionScore}%
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {plannedWorkout && (
+                <div className="bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Prescribed Workout</p>
+                        <h3 className="text-white font-bold">{plannedWorkout.title}</h3>
+                        <p className="text-xs text-slate-400">{plannedWorkout.description}</p>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-[#0f172a] p-4 rounded-2xl border border-slate-800">

@@ -6,7 +6,7 @@ import { weeklySchedule } from '@/data/mockData';
  * @param {Date} date - The date to fetch workout for
  */
 export const useDailyWorkout = (date) => {
-    const [workout, setWorkout] = useState(null);
+    const [workouts, setWorkouts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -14,45 +14,107 @@ export const useDailyWorkout = (date) => {
 
         setLoading(true);
 
-        // Mock logic: Map the actual day of week (0-6) to the mock schedule
-        // weeklySchedule has 7 items. match based on index? or create a mapping?
-        // weeklySchedule usually starts with Moday or Sunday? 
-        // Let's assume weeklySchedule is an array where we can just pick by day index (Mon=0, Sun=6)
-        // Adjust based on Date.getDay() (Sun=0, Mon=1...)
+        // Format selected date to match fullDate format (YYYY-MM-DD)
+        const dateStr = date.toISOString().split('T')[0];
 
-        const dayIndex = date.getDay(); // 0 is Sunday, 1 is Monday
-        // Convert to 0=Monday, 6=Sunday for many training plans
-        const scheduleIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+        // Filter all workouts for this specific date
+        const dailyWorkouts = weeklySchedule.filter(w => w.fullDate === dateStr);
 
-        // Note: This relies on weeklySchedule being array of 7 items in Mon-Sun order
-        // OR weeklySchedule having specific day mappings. 
-        // Let's reload mockData to check structure. 
-        // Assuming array length 7.
-
-        const scheduledItem = weeklySchedule[scheduleIndex];
-
-        if (scheduledItem) {
-            // Basic enrich logic duplicated here or import?
-            // Since enrichWorkout was internal, let's copy it or move it to a util.
-            // For safety, I'll copy the basic logic here for now to avoid breaking changes if util doesn't exist.
-            const enriched = enrichWorkout(scheduledItem);
-
-            // Override 'isToday' logic since we strictly selected this day
-            setWorkout(enriched);
+        if (dailyWorkouts.length > 0) {
+            const enrichedWorkouts = dailyWorkouts.map(w => enrichWorkout(w));
+            setWorkouts(enrichedWorkouts);
         } else {
-            setWorkout(null);
+            setWorkouts([]);
         }
 
         setLoading(false);
     }, [date]);
 
-    return { workout, loading };
+    return { workouts, loading };
 };
 
 /**
  * Enrich basic workout data with detailed targets based on type
  */
 function enrichWorkout(basicWorkout) {
+    const isSwim = basicWorkout.type === 'Swim';
+
+    // Helper to format distance based on sport
+    const formatDistString = (distInMeters) => {
+        if (!distInMeters) return '';
+        if (isSwim) return `${distInMeters}m`;
+        return `${distInMeters / 1000}km`;
+    };
+
+    // If the workout already has a detailed 'workout' structure (from mockData.js)
+    if (basicWorkout.workout) {
+        const w = basicWorkout.workout;
+        const intervals = [];
+        let step = 1;
+
+        // Map warmup
+        if (w.warmup) {
+            intervals.push({
+                step: step++,
+                name: 'Warm Up',
+                description: w.warmup.description ||
+                    (w.warmup.time ? `${w.warmup.time / 60}m warm up` :
+                        (w.warmup.distance ? `${formatDistString(w.warmup.distance)} warm up` : 'Warm Up'))
+            });
+        }
+
+        // Map drill
+        if (w.drill) {
+            intervals.push({
+                step: step++,
+                name: w.drill.drill || 'Drills',
+                description: `${w.drill.sets ? w.drill.sets + 'x' : ''}${formatDistString(w.drill.distance)} ${w.drill.description || ''}`.trim()
+            });
+        }
+
+        // Map main set
+        if (w.main) {
+            const mainDist = w.main.distance ? formatDistString(w.main.distance) : '';
+            intervals.push({
+                step: step++,
+                name: w.main.description || `Main Set: ${w.main.sets ? w.main.sets + 'x' : ''}${mainDist || (w.main.time ? w.main.time / 60 + 'm' : '')}`,
+                description: `${w.main.pace ? w.main.pace : (w.main.watts ? w.main.watts : '')} ${w.main.hr_zones ? 'HR: ' + w.main.hr_zones.join(', ') : ''}`.trim(),
+                isMain: true
+            });
+        }
+
+        // Map cool down
+        if (w.coolDown) {
+            intervals.push({
+                step: step++,
+                name: 'Cool Down',
+                description: w.coolDown.description || (w.coolDown.time ? `${w.coolDown.time / 60}m cool down` : 'Cool Down')
+            });
+        }
+
+        // If it's a strength session with exercises
+        if (w.main && w.main.exercises) {
+            w.main.exercises.forEach((ex, idx) => {
+                intervals.push({
+                    step: step++,
+                    name: ex,
+                    description: `Set ${idx + 1}`,
+                    isMain: true
+                });
+            });
+        }
+
+        return {
+            ...basicWorkout,
+            targetPace: w.main?.pace,
+            targetPower: w.main?.watts,
+            targetRPE: w.main?.RPE ? `${w.main.RPE}/10` : undefined,
+            intervals,
+            intensityProfile: generateIntensityProfile(w),
+            subtitle: basicWorkout.title
+        };
+    }
+
     const workoutTemplates = {
         Bike: {
             targetPower: '245W',
@@ -123,9 +185,53 @@ function enrichWorkout(basicWorkout) {
     return {
         ...basicWorkout,
         ...template,
-        subtitle: basicWorkout.type === 'Bike' ? 'Sweet Spot Intervals' :
-            basicWorkout.type === 'Run' ? 'Threshold Intervals' :
-                basicWorkout.type === 'Swim' ? 'Endurance Set' :
-                    basicWorkout.type === 'Brick' ? 'Race Simulation' : 'Recovery',
+        subtitle: basicWorkout.subtitle || (
+            basicWorkout.type === 'Bike' ? 'Sweet Spot Intervals' :
+                basicWorkout.type === 'Run' ? 'Threshold Intervals' :
+                    basicWorkout.type === 'Swim' ? 'Endurance Set' :
+                        basicWorkout.type === 'Brick' ? 'Race Simulation' : 'Recovery'
+        ),
     };
+}
+
+/**
+ * Generate a visual intensity profile based on the workout structure
+ */
+function generateIntensityProfile(workout) {
+    const profile = [];
+
+    // Warmup (ascending)
+    if (workout.warmup) {
+        profile.push(20, 30, 40);
+    }
+
+    // Drill (mid intensity)
+    if (workout.drill) {
+        profile.push(45, 55, 45);
+    }
+
+    // Main Set (high or alternating)
+    if (workout.main) {
+        if (workout.main.sets && workout.main.sets > 1) {
+            // Alternating spikes for interval sessions
+            for (let i = 0; i < Math.min(workout.main.sets, 4); i++) {
+                profile.push(85, 85, 40);
+            }
+        } else {
+            // Steady state high intensity
+            profile.push(75, 75, 75, 75, 75, 75);
+        }
+    }
+
+    // Cool down (descending)
+    if (workout.coolDown) {
+        profile.push(40, 30, 20);
+    }
+
+    // Fallback if profile is too short or empty
+    if (profile.length < 5) {
+        return [15, 20, 25, 30, 40, 40, 40, 30, 20, 15];
+    }
+
+    return profile;
 }

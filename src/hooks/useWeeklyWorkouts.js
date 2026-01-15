@@ -10,12 +10,30 @@ export const useWeeklyWorkouts = (date) => {
     const workouts = useMemo(() => {
         if (!date) return [];
 
-        // For now, since we only have one mock week, we just return the weeklySchedule.
-        // In a real app, this would fetch from an API for the specific week.
+        // Find the Monday of the week for the given date
+        const targetDate = new Date(date);
+        const day = targetDate.getDay(); // 0 is Sunday, 1 is Monday
+        const diff = targetDate.getDate() - day + (day === 0 ? -6 : 1); // Adjust to get Monday
+        const monday = new Date(targetDate.setDate(diff));
+        monday.setHours(0, 0, 0, 0);
 
-        // We ensure the return is exactly 7 items and we might eventually 
-        // need to map them to specific dates if the mock data becomes date-aware.
-        return weeklySchedule;
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        // Filter activities that fall within this week and add isToday flag
+        return weeklySchedule
+            .filter(item => {
+                const itemDate = new Date(item.fullDate);
+                return itemDate >= monday && itemDate <= sunday;
+            })
+            .map(item => ({
+                ...item,
+                isToday: item.fullDate === todayStr
+            }));
     }, [date]);
 
     return { workouts, loading: false };

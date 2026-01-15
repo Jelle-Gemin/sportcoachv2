@@ -1,4 +1,5 @@
 import React from 'react';
+import { Dumbbell, Trophy } from 'lucide-react';
 
 export const RunIcon = ({ className = "w-4 h-4" }) => (
     <svg
@@ -51,11 +52,26 @@ export const BikeIcon = ({ className = "w-4 h-4" }) => (
 );
 
 export const GymIcon = ({ className = "w-4 h-4" }) => (
+    <Dumbbell className={className} />
+);
+
+export const SoccerIcon = ({ className = "w-4 h-4" }) => (
+    <Trophy className={className} />
+);
+
+export const MultiIcon = ({ className = "w-4 h-4" }) => (
     <svg
         viewBox="0 0 24 24"
-        fill="currentColor"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         className={className}
     >
-        <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-1V3h-2v2h-4V3h-2v2H7c-1.1 0-2 .9-2 2v4H3.5c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5H5v4c0 1.1.9 2 2 2h1v2h2v-2h4v2h2v-2h1c1.1 0 2-.9 2-2v-4h1.5c.8 0 1.5-.7 1.5-1.5s-.7-1.5-1.5-1.5z" />
+        <circle cx="12" cy="12" r="1" />
+        <circle cx="19" cy="12" r="1" />
+        <circle cx="5" cy="12" r="1" />
     </svg>
 );
+

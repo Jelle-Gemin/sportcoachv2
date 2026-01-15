@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bike, Activity, Waves, Play, ArrowUpRight, ChevronRight, Calendar } from 'lucide-react';
+import { Bike, Activity, Waves, Play, ArrowUpRight, ChevronRight, Calendar, Trophy, Dumbbell } from 'lucide-react';
 import Metric from '../ui/Metric';
 import { cn } from '@/lib/utils';
 
@@ -86,14 +86,32 @@ const WorkoutCard = ({ workout }) => {
                     accentColor: '#f97316',
                     barColor: 'bg-orange-500',
                 };
-            default:
+            case 'Strength':
                 return {
-                    icon: <Activity className="w-5 h-5" />,
+                    icon: <Dumbbell className="w-5 h-5" />,
                     color: 'text-blue-400',
                     bgColor: 'bg-blue-500/10',
                     borderColor: 'border-blue-500/30',
                     accentColor: '#3b82f6',
                     barColor: 'bg-blue-500',
+                };
+            case 'Soccer':
+                return {
+                    icon: <Trophy className="w-5 h-5" />,
+                    color: 'text-yellow-400',
+                    bgColor: 'bg-yellow-500/10',
+                    borderColor: 'border-yellow-500/30',
+                    accentColor: '#eab308',
+                    barColor: 'bg-yellow-500',
+                };
+            default:
+                return {
+                    icon: <Activity className="w-5 h-5" />,
+                    color: 'text-slate-400',
+                    bgColor: 'bg-slate-500/10',
+                    borderColor: 'border-slate-500/30',
+                    accentColor: '#94a3b8',
+                    barColor: 'bg-slate-500',
                 };
         }
     };
@@ -127,7 +145,7 @@ const WorkoutCard = ({ workout }) => {
                         </div>
                         <div className="text-right">
                             <p className="text-xl font-bold">
-                                {workout.duration} <span className="text-xs font-normal text-slate-500">min</span>
+                                {workout.duration / 60} <span className="text-xs font-normal text-slate-500">min</span>
                             </p>
                             <p className="text-[10px] font-bold text-slate-500 uppercase">
                                 Est. TSS: {workout.tss || '--'}
