@@ -87,8 +87,14 @@ const ActivityLaps = ({ activity, onUpdate }) => {
                                     <td className="px-4 md:px-6 py-4 font-bold text-slate-400">
                                         {idx + 1}
                                         {lap.lapType && (
-                                            <span className={`ml-2 text-[10px] uppercase px-1.5 py-0.5 rounded ${lap.lapType === 'work' ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700/50 text-slate-500'
-                                                }`}>
+                                            <span className={`ml-2 text-[10px] uppercase px-1.5 py-0.5 rounded font-bold
+                                                ${lap.lapType === 'work' ? 'bg-blue-500/20 text-blue-400' : ''}
+                                                ${lap.lapType === 'main' ? 'bg-cyan-500/20 text-cyan-400' : ''}
+                                                ${lap.lapType === 'drill' ? 'bg-purple-500/20 text-purple-400' : ''}
+                                                ${lap.lapType === 'warmup' ? 'bg-emerald-500/20 text-emerald-400' : ''}
+                                                ${lap.lapType === 'cooldown' ? 'bg-indigo-500/20 text-indigo-400' : ''}
+                                                ${lap.lapType === 'rest' ? 'bg-slate-700/50 text-slate-500' : ''}
+                                            `}>
                                                 {lap.lapType}
                                             </span>
                                         )}

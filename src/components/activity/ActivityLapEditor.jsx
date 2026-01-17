@@ -102,7 +102,11 @@ export default function ActivityLapEditor({ activity, isOpen, onClose, onUpdate 
                     manualDistance: isSwim
                         ? Math.round(item.distanceKm) // Input was meters
                         : Math.round(item.distanceKm * 1000), // Input was KM
-                    manualMovingTime: parseDuration(item.timeStr)
+                    manualMovingTime: parseDuration(item.timeStr),
+                    // Fallback to activity averages if lap data is missing (e.g. new manual splits)
+                    averageHeartrate: base.averageHeartrate ?? activity.averageHeartrate,
+                    maxHeartrate: base.maxHeartrate ?? activity.maxHeartrate,
+                    averageWatts: base.averageWatts ?? activity.averageWatts,
                 };
             });
 

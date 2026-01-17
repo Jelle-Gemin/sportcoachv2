@@ -104,7 +104,7 @@ const TodayActivityCard = ({ activity }) => {
                         </div>
                         <div className="text-right">
                             <p className="text-xl font-bold text-white">
-                                {formatDuration(activity.movingTime)}
+                                {formatDuration(activity.manualMovingTime ?? activity.movingTime)}
                             </p>
                             <p className="text-[10px] font-bold text-slate-500 uppercase">
                                 {new Date(activity.startDate).toLocaleTimeString('en-US', {
@@ -121,7 +121,7 @@ const TodayActivityCard = ({ activity }) => {
                     <div className="grid grid-cols-4 gap-4 mb-8">
                         <Metric
                             label="Distance"
-                            value={`${formatDistance(activity.distance)}`}
+                            value={`${formatDistance(activity.manualDistance ?? activity.distance)}`}
                             sub="km"
                         />
                         {activity.type === 'Run' ? (
@@ -173,7 +173,7 @@ const TodayActivityCard = ({ activity }) => {
                                         <p className="text-sm font-bold text-white">
                                             {activity.type === 'Run'
                                                 ? formatPace(lap.averageSpeed)
-                                                : formatDuration(lap.movingTime)
+                                                : formatDuration(lap.manualMovingTime ?? lap.movingTime)
                                             }
                                         </p>
                                     </div>
