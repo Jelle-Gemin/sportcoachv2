@@ -7,33 +7,50 @@ import { weeklySchedule } from '@/data/mockData';
  * @returns {Array} - Array of 7 workout objects (Mon-Sun)
  */
 export const useWeeklyWorkouts = (date) => {
-    const workouts = useMemo(() => {
-        if (!date) return [];
+    // Suppress hydration mismatch by only calculating on client or ensuring consistent server timezone
+    // But better: use pure string logic for "days".
 
-        // Find the Monday of the week for the given date
-        const targetDate = new Date(date);
-        const day = targetDate.getDay(); // 0 is Sunday, 1 is Monday
-        const diff = targetDate.getDate() - day + (day === 0 ? -6 : 1); // Adjust to get Monday
-        const monday = new Date(targetDate.setDate(diff));
-        monday.setHours(0, 0, 0, 0);
+    // Helper: Get Mon-Sun range for a given date
+    const getWeekRange = (inputDate) => {
+        const d = new Date(inputDate);
+        // Normalize to noon to avoid DST/midnight shifts
+        d.setHours(12, 0, 0, 0);
+
+        const day = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+        const diffToMon = day === 0 ? -6 : 1 - day;
+
+        const monday = new Date(d);
+        monday.setDate(d.getDate() + diffToMon);
 
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        sunday.setHours(23, 59, 59, 999);
+
+        return { start: monday, end: sunday };
+    }
+
+    const workouts = useMemo(() => {
+        if (!date) return [];
+
+        const { start, end } = getWeekRange(date);
+
+        // Convert range to YYYY-MM-DD strings for comparison
+        const startStr = start.toISOString().split('T')[0];
+        const endStr = end.toISOString().split('T')[0];
 
         const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
+        const todayStr = now.toLocaleDateString('en-CA'); // 'en-CA' gives YYYY-MM-DD in local time
 
-        // Filter activities that fall within this week and add isToday flag
-        return weeklySchedule
+        // Filter activities that fall within this week
+        const weekWorkouts = weeklySchedule
             .filter(item => {
-                const itemDate = new Date(item.fullDate);
-                return itemDate >= monday && itemDate <= sunday;
+                return item.fullDate >= startStr && item.fullDate <= endStr;
             })
             .map(item => ({
                 ...item,
                 isToday: item.fullDate === todayStr
             }));
+
+        return weekWorkouts;
     }, [date]);
 
     return { workouts, loading: false };
