@@ -12,9 +12,34 @@ import { useDailyActivities } from '@/hooks/useDailyActivities';
 import { useDailyWorkout } from '@/hooks/useDailyWorkout';
 import { useWeeklyWorkouts } from '@/hooks/useWeeklyWorkouts';
 import { findMatchingPlannedWorkout } from '@/lib/utils/workoutComparison';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export default function Home() {
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Initialize date from URL or default to today
+    const [selectedDate, setSelectedDate] = React.useState(() => {
+        const dateParam = searchParams.get('date');
+        if (dateParam) {
+            const parsed = new Date(dateParam);
+            if (!isNaN(parsed.getTime())) return parsed;
+        }
+        return new Date();
+    });
+
+    // Update URL when date changes
+    React.useEffect(() => {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const current = new Date(searchParams.get('date') || new Date()).toISOString().split('T')[0];
+
+        if (dateStr !== current) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('date', dateStr);
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        }
+    }, [selectedDate, pathname, router, searchParams]);
 
     // Fetch overall activities for the ribbon (uses existing hook logic)
     const { activities, loading: activitiesLoading, syncStatus, isConnected } = useActivities();
@@ -61,7 +86,7 @@ export default function Home() {
     return (
         <>
             {/* Header */}
-            <header className="px-6 py-8 flex justify-between items-center">
+            <header className="px-4 md:px-6 py-8 flex justify-between items-center">
                 <div>
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">
                         {isToday ? "Today's Focus" : "Archive View"}
@@ -89,7 +114,7 @@ export default function Home() {
                 )}
             </header>
 
-            <div className="px-6 max-w-7xl mx-auto space-y-8">
+            <div className="px-4 md:px-6 max-w-7xl mx-auto space-y-6 md:space-y-8">
                 <WeeklyRibbon
                     activities={activities}
                     prescribedWorkouts={weeklyWorkouts}
@@ -97,10 +122,10 @@ export default function Home() {
                     onDateSelect={setSelectedDate}
                 />
 
-                {isToday && <InsightBanner />}
+                {/* {isToday && <InsightBanner />} */}
 
                 {/* Daily Content Section */}
-                <div className="space-y-6">
+                < div className="space-y-6">
                     {/* Prescribed Workout(s) */}
                     {!workoutLoading && workouts && workouts.length > 0 && (
                         <div className="space-y-4">
@@ -111,7 +136,6 @@ export default function Home() {
                                 {workouts.map((w, idx) => (
                                     <React.Fragment key={`${w.fullDate}-${w.type}-${idx}`}>
                                         <WorkoutCard workout={w} />
-                                        {idx === 0 && <ExecutionScore />}
                                     </React.Fragment>
                                 ))}
                             </div>
@@ -142,7 +166,7 @@ export default function Home() {
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
         </>
     );
 }

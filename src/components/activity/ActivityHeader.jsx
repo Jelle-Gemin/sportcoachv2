@@ -1,10 +1,14 @@
 import React from 'react';
 import { ChevronLeft, Calendar, Clock, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import Metric from '@/components/ui/Metric';
 import { cn } from '@/lib/utils';
 
 const ActivityHeader = ({ activity, plannedWorkout, executionScore }) => {
+    const searchParams = useSearchParams();
+    const returnDate = searchParams.get('returnDate');
+
     // Format helpers
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -38,7 +42,7 @@ const ActivityHeader = ({ activity, plannedWorkout, executionScore }) => {
     return (
         <header className="space-y-6">
             <Link
-                href="/"
+                href={returnDate ? `/?date=${returnDate}` : "/"}
                 className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold"
             >
                 <ChevronLeft className="w-4 h-4" /> Back to Dashboard

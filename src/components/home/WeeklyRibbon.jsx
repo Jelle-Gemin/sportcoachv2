@@ -76,7 +76,7 @@ const WeeklyRibbon = ({ activities = [], prescribedWorkouts = [], selectedDate, 
     });
 
     const getIcon = (type) => {
-        const iconClass = "w-5 h-5";
+        const iconClass = "w-3 h-3";
         switch (type) {
             case 'Run': return <RunIcon className={iconClass} />;
             case 'Swim': return <SwimIcon className={iconClass} />;
@@ -117,41 +117,44 @@ const WeeklyRibbon = ({ activities = [], prescribedWorkouts = [], selectedDate, 
                     </button>
                 </div>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+            <div className="grid grid-cols-7 gap-1">
                 {schedule.map((day, i) => (
                     <button
                         key={i}
                         onClick={() => onDateSelect(day.dateObj)}
                         className={cn(
-                            "flex-1 min-w-[70px] flex flex-col items-center p-3 rounded-2xl border transition-all duration-300",
+                            "flex flex-col items-center py-3 rounded-full transition-all duration-300 relative group",
                             day.isSelected
-                                ? 'bg-[#3b82f6] border-[#3b82f6] shadow-xl shadow-blue-500/20 scale-105'
-                                : day.isToday
-                                    ? 'bg-slate-900 border-blue-500/50'
-                                    : 'bg-[#0f172a] border-slate-800/50 hover:border-slate-700',
-                            !day.isSelected && !day.isToday && !day.completed && !day.prescribedType ? 'opacity-50 hover:opacity-100' : ''
+                                ? 'bg-blue-600 shadow-lg shadow-blue-500/30 text-white transform scale-105 z-10'
+                                : 'text-slate-500 hover:text-slate-300'
                         )}
                     >
                         <span className={cn(
-                            "text-[10px] font-bold mb-3",
-                            day.isSelected ? 'text-blue-100' : 'text-slate-500'
+                            "text-[10px] uppercase font-bold tracking-widest mb-1",
+                            day.isSelected ? "text-blue-200" : ""
                         )}>
-                            {day.day} {day.date}
+                            {day.day[0]}
                         </span>
-                        <div className={cn(
-                            "w-9 h-9 rounded-full flex items-center justify-center font-mono text-sm font-bold transition-colors",
-                            day.isSelected
-                                ? 'bg-white text-blue-600'
-                                : day.completed
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : day.prescribedType && day.prescribedType !== 'Rest'
-                                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                        : 'bg-slate-950 text-slate-300'
-                        )}>
+                        <span className="text-xl font-black font-sans tracking-tighter leading-none mb-1">
+                            {day.date}
+                        </span>
+
+                        {/* Indicator Dot/Icon */}
+                        <div className="h-4 flex items-center justify-center">
                             {day.displayType && day.displayType !== 'Rest' ? (
-                                getIcon(day.displayType)
+                                <div className={cn(
+                                    "transition-all",
+                                    day.isSelected ? "text-white" : "text-blue-500"
+                                )}>
+                                    {getIcon(day.displayType)}
+                                </div>
+                            ) : day.completed ? (
+                                <div className={cn(
+                                    "w-1.5 h-1.5 rounded-full",
+                                    day.isSelected ? "bg-white/50" : "bg-emerald-500"
+                                )}></div>
                             ) : (
-                                <span className="opacity-20">•</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-transparent"></div>
                             )}
                         </div>
                     </button>

@@ -80,124 +80,86 @@ const TodayActivityCard = ({ activity }) => {
 
     return (
         <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-end">
-                <h2 className={cn("text-lg font-bold flex items-center gap-2", styles.color)}>
-                    {styles.icon} Completed Activity
+            <div className="flex justify-between items-center">
+                <h2 className={cn("text-sm font-bold flex items-center gap-2 uppercase tracking-widest", styles.color)}>
+                    {styles.icon} Completed
                 </h2>
-                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1">
+                <span className="px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1">
                     <CheckCircle className="w-3 h-3" /> DONE
                 </span>
             </div>
 
             <div className={cn(
-                "bg-[#0f172a] rounded-[2.5rem] border overflow-hidden shadow-2xl transition-all hover:border-slate-700",
-                styles.borderColor
+                "rounded-[2rem] overflow-hidden shadow-xl transition-all relative group",
+                styles.bgColor // Subtle tint background
             )}>
-                {/* Activity Header */}
-                <div className={cn("h-32 relative border-b border-slate-800/50", styles.bgColor)}>
-                    <div className="absolute inset-0 p-8 flex justify-between items-start z-10">
-                        <div className="space-y-1">
-                            <p className={cn("text-[10px] font-bold uppercase tracking-widest", styles.color)}>
-                                {activity.type}
-                            </p>
-                            <h3 className="text-2xl font-bold text-white">{activity.name}</h3>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xl font-bold text-white">
-                                {formatDuration(activity.manualMovingTime ?? activity.movingTime)}
-                            </p>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase">
-                                {new Date(activity.startDate).toLocaleTimeString('en-US', {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
-                            </p>
-                        </div>
+                {/* Clean Header */}
+                <div className="p-6 md:p-8 pb-4 flex justify-between items-start z-10 relative">
+                    <div className="space-y-2 max-w-[70%]">
+                        <p className={cn("text-xs font-black uppercase tracking-widest", styles.color)}>
+                            {activity.type}
+                        </p>
+                        <h3 className="text-2xl md:text-3xl font-black text-white italic tracking-tight leading-none uppercase">
+                            {activity.name}
+                        </h3>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-3xl md:text-4xl font-black text-white leading-none">
+                            {formatDuration(activity.manualMovingTime ?? activity.movingTime).split(/[hm]/)[0]}
+                        </p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                            {formatDuration(activity.manualMovingTime ?? activity.movingTime).includes('h') ? 'Hours' : 'Minutes'}
+                        </p>
                     </div>
                 </div>
 
-                <div className="p-8">
+                <div className="p-5 md:p-8 pt-2">
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-4 gap-4 mb-8">
-                        <Metric
-                            label="Distance"
-                            value={`${formatDistance(activity.manualDistance ?? activity.distance)}`}
-                            sub="km"
-                        />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 mt-4">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Distance</span>
+                            <span className="text-xl font-black text-white">{formatDistance(activity.manualDistance ?? activity.distance)}</span>
+                            <span className="text-xs font-bold text-slate-500">km</span>
+                        </div>
                         {activity.type === 'Run' ? (
-                            <Metric
-                                label="Avg Pace"
-                                value={formatPace(activity.averageSpeed)}
-                                sub="/km"
-                            />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Pace</span>
+                                <span className="text-xl font-black text-white">{formatPace(activity.averageSpeed)}</span>
+                                <span className="text-xs font-bold text-slate-500">/km</span>
+                            </div>
                         ) : (
-                            <Metric
-                                label="Avg Speed"
-                                value={formatSpeed(activity.averageSpeed)}
-                                sub="km/h"
-                            />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Speed</span>
+                                <span className="text-xl font-black text-white">{formatSpeed(activity.averageSpeed)}</span>
+                                <span className="text-xs font-bold text-slate-500">km/h</span>
+                            </div>
                         )}
                         {activity.averageHeartrate && (
-                            <Metric
-                                label="Avg HR"
-                                value={Math.round(activity.averageHeartrate)}
-                                sub="bpm"
-                            />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Avg HR</span>
+                                <span className="text-xl font-black text-white">{Math.round(activity.averageHeartrate)}</span>
+                                <span className="text-xs font-bold text-slate-500">bpm</span>
+                            </div>
                         )}
                         {activity.averageWatts && (
-                            <Metric
-                                label="Avg Power"
-                                value={Math.round(activity.averageWatts)}
-                                sub="W"
-                            />
-                        )}
-                        {!activity.averageHeartrate && !activity.averageWatts && (
-                            <Metric
-                                label="Elevation"
-                                value={Math.round(activity.totalElevationGain || 0)}
-                                sub="m"
-                            />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Power</span>
+                                <span className="text-xl font-black text-white">{Math.round(activity.averageWatts)}</span>
+                                <span className="text-xs font-bold text-slate-500">W</span>
+                            </div>
                         )}
                     </div>
-
-                    {/* Lap Summary (if available) */}
-                    {activity.laps && activity.laps.length > 1 && (
-                        <div className="mb-8">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
-                                Lap Splits
-                            </p>
-                            <div className="flex gap-2 overflow-x-auto pb-2">
-                                {activity.laps.slice(0, 6).map((lap, idx) => (
-                                    <div key={idx} className="flex-shrink-0 bg-slate-950/50 px-3 py-2 rounded-xl border border-slate-800/50">
-                                        <p className="text-[9px] font-bold text-slate-600 uppercase">Lap {idx + 1}</p>
-                                        <p className="text-sm font-bold text-white">
-                                            {activity.type === 'Run'
-                                                ? formatPace(lap.averageSpeed)
-                                                : formatDuration(lap.manualMovingTime ?? lap.movingTime)
-                                            }
-                                        </p>
-                                    </div>
-                                ))}
-                                {activity.laps.length > 6 && (
-                                    <div className="flex-shrink-0 bg-slate-950/50 px-3 py-2 rounded-xl border border-slate-800/50 flex items-center">
-                                        <p className="text-xs text-slate-500">+{activity.laps.length - 6} more</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Actions */}
                     <div className="flex gap-4">
                         <Link
-                            href={`/activities/${activity.stravaId}`}
+                            href={`/activities/${activity.stravaId}?returnDate=${new Date(activity.startDate).toISOString().split('T')[0]}`}
                             className={cn(
-                                "flex-1 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors",
-                                styles.bgColor, styles.borderColor, "border", styles.color,
-                                "hover:opacity-80"
+                                "flex-1 py-4 rounded-xl font-black uppercase tracking-wider text-sm flex items-center justify-center gap-2 transition-colors border-2",
+                                styles.borderColor, styles.color, "hover:bg-white/5"
                             )}
                         >
-                            <ArrowUpRight className="w-4 h-4" /> View Details
+                            View Analysis <ArrowUpRight className="w-4 h-4" />
                         </Link>
                     </div>
                 </div>

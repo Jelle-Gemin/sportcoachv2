@@ -17,8 +17,8 @@ const ExecutionScore = () => {
         <div className="space-y-4">
             <h2 className="text-lg font-bold">Latest Analysis</h2>
 
-            <div className="bg-[#0f172a] p-6 rounded-[2.5rem] border border-slate-800">
-                <div className="flex justify-between items-start mb-6">
+            <div className="bg-[#0f172a] p-5 md:p-6 rounded-[2.5rem] border border-slate-800">
+                <div className="flex flex-wrap justify-between items-start mb-6 gap-2">
                     <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Yesterday • Run</p>
                         <h3 className="font-bold">Threshold 400s</h3>
@@ -39,9 +39,8 @@ const ExecutionScore = () => {
                     <p><span className="text-white font-bold">Execution Insight:</span> You held pace perfectly during intervals 4-8. Early HR spikes suggest a longer warm-up may be needed for tomorrow's set.</p>
                 </div>
             </div>
-
             {/* Progress Summary */}
-            <div className="bg-[#0f172a] p-6 rounded-[2.5rem] border border-slate-800">
+            <div className="bg-[#0f172a] p-5 md:p-6 rounded-[2.5rem] border border-slate-800">
                 <h4 className="text-xs font-bold text-slate-500 uppercase mb-4">Training Load</h4>
                 <div className="flex items-end gap-2 h-20 mb-2">
                     {[30, 45, 60, 40, 75, 90, 65].map((h, i) => (
