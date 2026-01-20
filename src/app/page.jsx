@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { Suspense } from 'react';
 import { Bell } from 'lucide-react';
 import WeeklyRibbon from '@/components/home/WeeklyRibbon';
-import InsightBanner from '@/components/home/InsightBanner';
 import WorkoutCard from '@/components/home/WorkoutCard';
 import TodayActivityCard from '@/components/home/TodayActivityCard';
-import ExecutionScore from '@/components/home/ExecutionScore';
 import { useActivities } from '@/hooks/useActivities';
 import { useDailyActivities } from '@/hooks/useDailyActivities';
 import { useDailyWorkout } from '@/hooks/useDailyWorkout';
@@ -14,7 +12,23 @@ import { useWeeklyWorkouts } from '@/hooks/useWeeklyWorkouts';
 import { findMatchingPlannedWorkout } from '@/lib/utils/workoutComparison';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
+function HomeLoading() {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+}
+
 export default function Home() {
+    return (
+        <Suspense fallback={<HomeLoading />}>
+            <HomeContent />
+        </Suspense>
+    );
+}
+
+function HomeContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -42,7 +56,7 @@ export default function Home() {
     }, [selectedDate, pathname, router, searchParams]);
 
     // Fetch overall activities for the ribbon (uses existing hook logic)
-    const { activities, loading: activitiesLoading, syncStatus, isConnected } = useActivities();
+    const { activities, syncStatus, isConnected } = useActivities();
 
     // Fetch weekly workouts for the ribbon icons
     const { workouts: weeklyWorkouts } = useWeeklyWorkouts(selectedDate);

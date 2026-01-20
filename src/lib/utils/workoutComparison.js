@@ -123,7 +123,7 @@ function identifyLaps(actual, workout, type) {
     const workLaps = [];
     const restLaps = [];
 
-    actual.laps.forEach((lap, idx) => {
+    actual.laps.forEach((lap) => {
         const lapDist = lap.manualDistance ?? lap.distance;
         const lapTime = lap.manualMovingTime ?? lap.movingTime;
         const speed = lapDist / (lapTime || 1); // m/s

@@ -3,7 +3,7 @@ import { Pencil } from 'lucide-react';
 import ActivityLapEditor from './ActivityLapEditor';
 
 const ActivityLaps = ({ activity, onUpdate }) => {
-    const { laps, type, stravaId } = activity || {};
+    const { laps, type } = activity || {};
     const [isEditing, setIsEditing] = useState(false);
 
     if (!laps || laps.length === 0) return null;

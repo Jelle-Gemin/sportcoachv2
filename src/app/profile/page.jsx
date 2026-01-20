@@ -333,7 +333,6 @@ export default function Profile() {
     const formValues = watch();
     const biometrics = formValues.biometrics;
     const trainingZones = formValues.trainingZones;
-    const items = fields; // useFieldArray fields
 
     // Derive focus from A-Race
     const aRace = formValues.seasonGoals?.find(g => g.priority === 'A');

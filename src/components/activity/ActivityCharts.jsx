@@ -25,7 +25,7 @@ const ActivityCharts = ({ streams, type }) => {
         pace: streams.velocity_smooth ? (1000 / Math.max(streams.velocity_smooth[i], 0.1) / 60) : null,
     })).filter((_, i) => i % 5 === 0); // Downsample for performance (every 5th point)
 
-    const CustomTooltip = ({ active, payload, label }) => {
+    const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
             return (
                 <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg shadow-xl">
@@ -104,7 +104,7 @@ const ActivityCharts = ({ streams, type }) => {
                             tickLine={false}
                             axisLine={false}
                         />
-                        <Tooltip content={<CustomTooltip />} />
+                        <Tooltip content={CustomTooltip} />
 
                         {activeChart === 'hr' && (
                             <Area
@@ -150,6 +150,5 @@ const ActivityCharts = ({ streams, type }) => {
             </div>
         </div>
     );
-};
-
-export default ActivityCharts;
+}
+export default ActivityCharts

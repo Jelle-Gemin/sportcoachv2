@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { weeklySchedule } from '@/data/mockData';
 
 /**
@@ -6,13 +6,8 @@ import { weeklySchedule } from '@/data/mockData';
  * @param {Date} date - The date to fetch workout for
  */
 export const useDailyWorkout = (date) => {
-    const [workouts, setWorkouts] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!date) return;
-
-        setLoading(true);
+    const result = useMemo(() => {
+        if (!date) return { workouts: [], loading: false };
 
         // Format selected date to match fullDate format (YYYY-MM-DD)
         const dateStr = date.toISOString().split('T')[0];
@@ -22,15 +17,13 @@ export const useDailyWorkout = (date) => {
 
         if (dailyWorkouts.length > 0) {
             const enrichedWorkouts = dailyWorkouts.map(w => enrichWorkout(w));
-            setWorkouts(enrichedWorkouts);
-        } else {
-            setWorkouts([]);
+            return { workouts: enrichedWorkouts, loading: false };
         }
 
-        setLoading(false);
+        return { workouts: [], loading: false };
     }, [date]);
 
-    return { workouts, loading };
+    return result;
 };
 
 /**

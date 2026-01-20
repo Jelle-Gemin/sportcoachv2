@@ -44,7 +44,7 @@ const WeeklyRibbon = ({ activities = [], prescribedWorkouts = [], selectedDate, 
             try {
                 const actDate = new Date(a.startDate).toISOString().split('T')[0];
                 return actDate === day.fullDate;
-            } catch (e) {
+            } catch {
                 return false;
             }
         });

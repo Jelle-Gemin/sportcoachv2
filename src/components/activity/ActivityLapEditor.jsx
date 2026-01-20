@@ -1,41 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Save, AlertCircle, Trash2, Plus } from 'lucide-react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { cn } from '@/lib/utils';
+import { formatDuration, parseDuration, formatTimeInput } from '@/lib/time';
 
-// Helper to format seconds to MM:SS
-const formatDuration = (seconds) => {
-    if (!seconds) return '00:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
-
-// Helper to parse MM:SS or HH:MM:SS to seconds
-const parseDuration = (timeStr) => {
-    if (!timeStr) return 0;
-    const parts = timeStr.split(':').map(Number);
-    if (parts.length === 3) {
-        return (parts[0] * 3600) + (parts[1] * 60) + (parts[2] || 0);
-    }
-    if (parts.length === 2) {
-        return (parts[0] * 60) + (parts[1] || 0);
-    }
-    return parts[0] || 0;
-};
-
-// Helper for real-time input masking (matches profile page)
-const formatTimeInput = (value) => {
-    const digits = value.replace(/\D/g, '').slice(0, 6);
-    const parts = [];
-    for (let i = 0; i < digits.length; i += 2) {
-        parts.push(digits.slice(i, i + 2));
-    }
-    return parts.join(':');
-};
+// Time utilities imported from @/lib/time
 
 const schema = yup.object().shape({
     laps: yup.array().of(
@@ -69,7 +41,7 @@ export default function ActivityLapEditor({ activity, isOpen, onClose, onUpdate 
                         ? (lap.manualDistance ?? lap.distance).toFixed(0)
                         : ((lap.manualDistance ?? lap.distance) / 1000).toFixed(3)
                 ),
-                timeStr: formatDuration(lap.manualMovingTime ?? lap.movingTime)
+                timeStr: formatDuration(lap.manualMovingTime ?? lap.movingTime, 'ms')
             }))
         }
     });

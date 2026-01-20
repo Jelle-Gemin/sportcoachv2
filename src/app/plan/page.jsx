@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar as CalendarIcon, Filter, ChevronLeft, ChevronRight, Activity, Waves, Bike, Clock, Zap, Dumbbell, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Calendar as CalendarIcon, Filter, ChevronLeft, ChevronRight, Clock, Zap, CheckCircle2, TrendingUp } from 'lucide-react';
 import { RunIcon, SwimIcon, BikeIcon, GymIcon, SoccerIcon, MultiIcon } from '@/components/icons/SportIcons';
 import { useWeeklyWorkouts } from '@/hooks/useWeeklyWorkouts';
 import { useActivities } from '@/hooks/useActivities';
@@ -10,11 +10,26 @@ import { cn } from '@/lib/utils';
 import Card from '@/components/ui/Card';
 import { weeklySchedule } from '@/data/mockData';
 
+function PlanLoading() {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+}
+
 export default function Plan() {
+    return (
+        <Suspense fallback={<PlanLoading />}>
+            <PlanContent />
+        </Suspense>
+    );
+}
+
+function PlanContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // START WITH STRING STATE to avoid hydration mismatch (server date != client date)
     // Default to current week (Monday)
     const [selectedDate, setSelectedDate] = useState(() => {
         const now = new Date();
@@ -32,8 +47,11 @@ export default function Plan() {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
 
     useEffect(() => {
-        // Set today's date only on client to avoid hydration mismatch
-        setTodayStr(new Date().toLocaleDateString('en-CA'));
+        const initToday = () => {
+            const date = new Date().toLocaleDateString('en-CA');
+            setTodayStr(date);
+        };
+        initToday();
     }, []);
 
     const { workouts: plannedWorkouts, loading: planLoading } = useWeeklyWorkouts(selectedDate);
@@ -49,11 +67,7 @@ export default function Plan() {
     };
 
     // Helper to format "YYYY-MM-DD" to "Jan 5"
-    const formatDateStr = (dateStr) => {
-        if (!dateStr) return '';
-        const date = parseDateSafe(dateStr);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    };
+
 
     const getIcon = (type) => {
         const iconClass = "w-3 h-3";
@@ -142,7 +156,7 @@ export default function Plan() {
                     if (planned.type === 'Brick') isSameType = (act.type === 'Ride' || act.type === 'Run'); // Loose match for brick
 
                     return isSameDate && isSameType;
-                } catch (err) {
+                } catch {
                     return false;
                 }
             });

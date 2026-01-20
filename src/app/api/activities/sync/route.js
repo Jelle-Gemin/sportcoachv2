@@ -14,7 +14,7 @@ import { upsertActivity, findExistingStravaIds } from '@/lib/models/activity';
 export async function POST(request) {
     try {
         const body = await request.json();
-        const { stravaId, fullSync = true } = body; // Default to fullSync/smart check based on request
+        const { stravaId } = body;
 
         if (!stravaId) {
             return NextResponse.json({ error: 'stravaId is required' }, { status: 400 });

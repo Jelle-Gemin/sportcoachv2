@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Activity, Waves, Bike, CheckCircle, Clock, Zap, Heart, ArrowUpRight } from 'lucide-react';
 import Metric from '../ui/Metric';
 import { cn } from '@/lib/utils';
+import { formatDuration } from '@/lib/time';
 
 /**
  * Card component for displaying a completed activity from Strava
@@ -52,13 +53,7 @@ const TodayActivityCard = ({ activity }) => {
     const styles = getTypeStyles(activity.type);
 
     // Format helpers
-    const formatDuration = (seconds) => {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        if (hrs > 0) return `${hrs}h ${mins}m`;
-        return `${mins}m ${secs}s`;
-    };
+    // formatDuration imported from @/lib/time
 
     const formatDistance = (meters) => {
         const km = meters / 1000;

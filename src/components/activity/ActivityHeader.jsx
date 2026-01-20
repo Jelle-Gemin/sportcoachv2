@@ -1,9 +1,10 @@
 import React from 'react';
-import { ChevronLeft, Calendar, Clock, MapPin } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Metric from '@/components/ui/Metric';
 import { cn } from '@/lib/utils';
+import { formatDuration } from '@/lib/time';
 
 const ActivityHeader = ({ activity, plannedWorkout, executionScore }) => {
     const searchParams = useSearchParams();
@@ -28,12 +29,7 @@ const ActivityHeader = ({ activity, plannedWorkout, executionScore }) => {
         });
     };
 
-    const formatDuration = (seconds) => {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hrs}h ${mins}m ${secs}s`;
-    };
+    // formatDuration imported from @/lib/time
 
     // Calculate intensity / TSS approximation if not available
     // (This is a simplified calculation for display)

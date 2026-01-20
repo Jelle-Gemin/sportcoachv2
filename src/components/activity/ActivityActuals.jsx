@@ -1,55 +1,25 @@
 
 import React, { useState } from 'react';
 import { Pencil, Ruler, Clock, Save, X } from 'lucide-react';
+import { formatDuration, parseDuration, formatTimeInput } from '@/lib/time';
 
 export default function ActivityActuals({ activity, onUpdate }) {
     const isSwim = activity.type === 'Swim';
     const isTreadmill = activity.isTreadmill;
 
-    // Only show for Swim or Treadmill
-    if (!isSwim && !isTreadmill) return null;
-
-    // Helper to format seconds to HH:MM:SS
-    const formatDuration = (seconds) => {
-        if (!seconds) return '00:00:00';
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    // Helper to parse HH:MM:SS to seconds
-    const parseDuration = (timeStr) => {
-        if (!timeStr) return 0;
-        const parts = timeStr.split(':').map(Number);
-        if (parts.length === 3) return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-        if (parts.length === 2) return (parts[0] * 60) + parts[1];
-        return parts[0] || 0;
-    };
-
-    // Helper for real-time input masking (matches profile page)
-    const formatTimeInput = (value) => {
-        const digits = value.replace(/\D/g, '').slice(0, 6);
-        const parts = [];
-        for (let i = 0; i < digits.length; i += 2) {
-            parts.push(digits.slice(i, i + 2));
-        }
-        return parts.join(':');
-    };
-
     const [isEditing, setIsEditing] = useState(false);
-
-    // State stores display values (Meters for Swim, KM for others)
     const [distanceInput, setDistanceInput] = useState(
         isSwim
             ? (activity.manualDistance ?? activity.distance).toFixed(0)
             : ((activity.manualDistance ?? activity.distance) / 1000).toFixed(2)
     );
     const [timeStr, setTimeStr] = useState(
-        formatDuration(activity.manualMovingTime ?? activity.movingTime)
+        formatDuration(activity.manualMovingTime ?? activity.movingTime, 'colon')
     );
-
     const [loading, setLoading] = useState(false);
+
+    // Only show for Swim or Treadmill
+    if (!isSwim && !isTreadmill) return null;
 
     const handleSave = async () => {
         setLoading(true);

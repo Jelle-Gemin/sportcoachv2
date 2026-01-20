@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { weeklySchedule } from '@/data/mockData';
 
 /**

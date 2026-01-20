@@ -7,6 +7,22 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata = {
     title: "TriSync - Sport Coach App",
     description: "Advanced performance tracking for triathletes",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "black-translucent",
+        title: "TriSync",
+    },
+    formatDetection: {
+        telephone: false,
+    },
+};
+
+export const viewport = {
+    themeColor: "#020617",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
 };
 
 export default function RootLayout({ children }) {
