@@ -18,6 +18,7 @@ export default function LayoutClient({ children }) {
                 });
         }
     }, []);
+
     const pathname = usePathname();
     const isLoginPage = pathname === "/login";
 

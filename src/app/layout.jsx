@@ -5,16 +5,8 @@ import LayoutClient from "./layout-client";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata = {
-    title: "TriSync - Sport Coach App",
-    description: "Advanced performance tracking for triathletes",
-    appleWebApp: {
-        capable: true,
-        statusBarStyle: "black-translucent",
-        title: "TriSync",
-    },
-    formatDetection: {
-        telephone: false,
-    },
+    manifest: "/manifest.json",
+    themeColor: "#020617",
 };
 
 export const viewport = {
