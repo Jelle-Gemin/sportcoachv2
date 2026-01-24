@@ -63,6 +63,7 @@ export interface IRunWorkout extends IWorkout {
 export interface IBikeMainSet extends IMainSetBase {
     time?: number        // seconds
     watts?: string       // "88–90% FTP"
+    restWatts?: string   // "65% FTP"
     description?: string
 }
 

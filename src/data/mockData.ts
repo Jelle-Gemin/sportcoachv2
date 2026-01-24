@@ -487,41 +487,34 @@ export const weeklySchedule: IWorkout[] = [
         },
     } as ISwimWorkout,
 
-    // -------------------- SAT --------------------
+    // -------------------- SAT (BIKE) --------------------
     {
         day: "Sat",
         date: "24",
         fullDate: "2026-01-24",
-        type: "Soccer",
-        completed: false,
-        title: "Soccer Match",
-        description: "Weekly competition.",
-        duration: 5400,
-    },
-
-    // -------------------- SUN (BIKE) --------------------
-    {
-        day: "Sun",
-        date: "25",
-        fullDate: "2026-01-25",
         type: "Bike",
         completed: false,
         title: "Key Session: Brick (Bike)",
         description: "75 min (inclusief 4x8' @ 92% FTP).",
         duration: 4500,
         workout: {
+            warmup: { time: 600, },
             main: {
-                time: 4500,
-                description: "Incl. 4x8' @ 92% FTP",
+                time: 480,
+                watts: "92% FTP",
+                rest: 300,
+                restWatts: "65% FTP",
+                description: "92% FTP, 5 min",
             },
+            coolDown: { time: 1380 }
         },
     } as IBikeWorkout,
 
-    // -------------------- SUN (RUN) --------------------
+    // -------------------- SAT (RUN) --------------------
     {
-        day: "Sun",
-        date: "25",
-        fullDate: "2026-01-25",
+        day: "Sat",
+        date: "24",
+        fullDate: "2026-01-24",
         type: "Run",
         completed: false,
         title: "Key Session: Brick (Run)",
@@ -534,6 +527,19 @@ export const weeklySchedule: IWorkout[] = [
             },
         },
     } as IRunWorkout,
+
+
+    // -------------------- SUN --------------------
+    {
+        day: "Son",
+        date: "25",
+        fullDate: "2026-01-25",
+        type: "Soccer",
+        completed: false,
+        title: "Soccer Match",
+        description: "Weekly competition.",
+        duration: 5400,
+    },
 
     /*
     // WEEK 4 — Specific Power & Tempo (26/01/2026 - 01/02/2026)
