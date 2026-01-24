@@ -286,7 +286,7 @@ function PlanContent() {
     const [localWorkouts, setLocalWorkouts] = useState([]);
 
     useEffect(() => {
-        if (plannedWorkouts.length > 0) {
+        if (plannedWorkouts) {
             const enhanced = plannedWorkouts.map((w, idx) => ({
                 ...w,
                 _id: `${w.fullDate}-${w.type}-${idx}-${Math.random().toString(36).substr(2, 9)}`,
