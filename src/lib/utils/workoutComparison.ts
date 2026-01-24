@@ -2,13 +2,15 @@
  * Calculation for execution score (0-100)
  * Compares prescribed metrics with actual metrics
  */
+
+import { AnyWorkout } from "../models/workout";
+
 /**
  * Calculation for execution score (0-100)
  * Compares prescribed metrics with actual metrics, focusing on main sets
  */
 export function calculateExecutionScore(planned, actual, userFtp) {
     if (!planned || !actual) return 0;
-    if (planned.type === 'Rest') return actual.movingTime > 0 ? 50 : 100;
 
     const workout = planned.workout;
     const mainSet = workout?.main;
@@ -32,7 +34,7 @@ export function calculateExecutionScore(planned, actual, userFtp) {
         // Current logic: volumeScore based on mainSet.sets.
         // If we want to include drills in volume, we should calculate total target sets.
         let targetSets = mainSet.sets;
-        if (planned.type === 'Swim') {
+        if (workout.type === 'Swim') {
             const drillSets = workout.drill?.sets || 0;
             targetSets += drillSets;
         }
@@ -255,8 +257,6 @@ function calculateLapQuality(lap, mainSet, type, userFtp) {
     if (type === 'Bike' && mainSet.watts) {
         const targetWatts = (parseInt(mainSet.watts) / 100) * userFtp;
         const actualWatts = lap.averageWatts || (lap.averageHeartrate * 1.5); // Fallback
-        console.log("targetWatts", targetWatts);
-        console.log("actualWatts", actualWatts);
         if (!targetWatts) return 100;
         return Math.max(0, 100 - (Math.abs(targetWatts - actualWatts) / targetWatts) * 100);
     }

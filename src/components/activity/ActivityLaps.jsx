@@ -72,8 +72,8 @@ const ActivityLaps = ({ activity, onUpdate }) => {
                             <th className="px-4 md:px-6 py-4">
                                 {type === 'Swim' ? 'Pace (100m)' : type === 'Run' ? 'Pace' : 'Speed'}
                             </th>
+                            {type === 'Bike' || type === 'VirtualRide' && <th className="px-4 md:px-6 py-4">Avg Power</th>}
                             <th className="px-4 md:px-6 py-4">Avg HR</th>
-                            {type === 'Bike' && <th className="px-4 md:px-6 py-4">Avg Power</th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800">
@@ -110,12 +110,15 @@ const ActivityLaps = ({ activity, onUpdate }) => {
                                         {formatSpeed(speed, type)}
                                     </td>
 
+                                    {type === 'Bike' || type === 'VirtualRide' &&
+                                        <td className="px-4 md:px-6 py-4">
+                                            {lap.averageWatts ? Math.round(lap.averageWatts) : '-'} <span className="text-xs text-slate-500">W</span>
+                                        </td>
+                                    }
+
                                     <td className="px-4 md:px-6 py-4">
                                         {lap.averageHeartrate ? Math.round(lap.averageHeartrate) : '-'} <span className="text-xs text-slate-500">bpm</span>
                                     </td>
-                                    {type === 'Bike' && <td className="px-4 md:px-6 py-4">
-                                        {lap.averageWatts ? Math.round(lap.averageWatts) : '-'} <span className="text-xs text-slate-500">W</span>
-                                    </td>}
                                 </tr>
                             );
                         })}
