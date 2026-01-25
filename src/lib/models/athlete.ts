@@ -37,7 +37,8 @@ export interface AthleteDocument {
         priority: string;
         distance: string;
         goalTime: string;
-        estimatedTime: string;
+        estimatedTimeMin?: string;
+        estimatedTimeMax?: string;
         progress: number;
     }>;
     createdAt: Date;

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { User as UserIcon, Shield, Bell, Heart, Gauge, Trophy, Briefcase, Camera, Save, X, Trash2, RotateCcw, AlertCircle } from 'lucide-react';
+import { User as UserIcon, Shield, Bell, Heart, Gauge, Trophy, Briefcase, Camera, Save, X, Trash2, RotateCcw, AlertCircle, Calculator } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 import { calculateKarvonenZones, calculateCogganZones, calculateSwimZones } from '@/lib/zones';
@@ -29,7 +29,8 @@ interface Goal {
     distance?: string | null | undefined;
     location?: string | null | undefined;
     goalTime?: string | null | undefined;
-    estimatedTime?: string | null | undefined;
+    estimatedTimeMin?: string | null | undefined;
+    estimatedTimeMax?: string | null | undefined;
 }
 
 interface Zone {
@@ -83,7 +84,9 @@ interface GoalCardProps {
     control: any;
     index: number;
     onDelete: () => void;
+    onCalculate: (_index: number, _distance: string) => Promise<void>;
     errors: any;
+    isCalculating?: boolean;
 }
 
 /**
@@ -117,7 +120,8 @@ const validationSchema = yup.object().shape({
             distance: yup.string().nullable(),
             location: yup.string().nullable(),
             goalTime: yup.string().matches(/^(\d{2}:){0,2}\d{2}$/, 'Format: HH:MM:SS').nullable(),
-            estimatedTime: yup.string().matches(/^(\d{2}:){0,2}\d{2}$/, 'Format: HH:MM:SS').nullable(),
+            estimatedTimeMin: yup.string().matches(/^(\d{2}:){0,2}\d{2}$/, 'Format: HH:MM:SS').nullable(),
+            estimatedTimeMax: yup.string().matches(/^(\d{2}:){0,2}\d{2}$/, 'Format: HH:MM:SS').nullable(),
         })
     ),
     trainingZones: yup.object().shape({
@@ -223,7 +227,7 @@ const DISTANCE_OPTIONS = [
     "Other"
 ];
 
-const GoalCard = ({ goal, editing, control, index, onDelete, errors }: GoalCardProps) => {
+const GoalCard = ({ goal, editing, control, index, onDelete, onCalculate, errors, isCalculating }: GoalCardProps) => {
     const goalErrors = errors?.seasonGoals?.[index];
 
     return (
@@ -344,25 +348,66 @@ const GoalCard = ({ goal, editing, control, index, onDelete, errors }: GoalCardP
                         ) : <p className="text-sm text-slate-200 font-medium">{goal.goalTime || '-'}</p>}
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-500 uppercase">Estimated Time</label>
+                    <div className="space-y-1 md:col-span-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-500 uppercase">Estimated Time Range</label>
+                            {editing && goal.distance && (
+                                <button
+                                    type="button"
+                                    onClick={() => onCalculate(index, goal.distance)}
+                                    disabled={isCalculating}
+                                    className="text-xs flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors disabled:opacity-50"
+                                >
+                                    <Calculator className="w-3 h-3" />
+                                    {isCalculating ? 'Calculating...' : 'Calculate'}
+                                </button>
+                            )}
+                        </div>
                         {editing ? (
-                            <Controller
-                                name={`seasonGoals.${index}.estimatedTime`}
-                                control={control}
-                                render={({ field: { value, onChange } }) => (
-                                    <>
-                                        <input
-                                            value={value || ''}
-                                            onChange={(e) => onChange(formatTimeInput(e.target.value))}
-                                            className={cn("w-full bg-slate-900 border rounded-lg px-3 py-2 text-white text-sm focus:outline-none", goalErrors?.estimatedTime ? "border-red-500/50 focus:border-red-500" : "border-slate-800 focus:border-indigo-500")}
-                                            placeholder="HH:MM:SS"
-                                        />
-                                        <ErrorMessage error={goalErrors?.estimatedTime} />
-                                    </>
-                                )}
-                            />
-                        ) : <p className="text-sm text-slate-400 font-medium">{goal.estimatedTime || '-'}</p>}
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Controller
+                                        name={`seasonGoals.${index}.estimatedTimeMin`}
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => (
+                                            <>
+                                                <input
+                                                    value={value || ''}
+                                                    onChange={(e) => onChange(formatTimeInput(e.target.value))}
+                                                    className={cn("w-full bg-slate-900 border rounded-lg px-3 py-2 text-white text-sm focus:outline-none", goalErrors?.estimatedTimeMin ? "border-red-500/50 focus:border-red-500" : "border-slate-800 focus:border-indigo-500")}
+                                                    placeholder="Min (HH:MM:SS)"
+                                                />
+                                                <ErrorMessage error={goalErrors?.estimatedTimeMin} />
+                                            </>
+                                        )}
+                                    />
+                                </div>
+                                <span className="text-slate-500">-</span>
+                                <div className="flex-1">
+                                    <Controller
+                                        name={`seasonGoals.${index}.estimatedTimeMax`}
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => (
+                                            <>
+                                                <input
+                                                    value={value || ''}
+                                                    onChange={(e) => onChange(formatTimeInput(e.target.value))}
+                                                    className={cn("w-full bg-slate-900 border rounded-lg px-3 py-2 text-white text-sm focus:outline-none", goalErrors?.estimatedTimeMax ? "border-red-500/50 focus:border-red-500" : "border-slate-800 focus:border-indigo-500")}
+                                                    placeholder="Max (HH:MM:SS)"
+                                                />
+                                                <ErrorMessage error={goalErrors?.estimatedTimeMax} />
+                                            </>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-slate-400 font-medium">
+                                {goal.estimatedTimeMin && goal.estimatedTimeMax
+                                    ? `${goal.estimatedTimeMin} - ${goal.estimatedTimeMax}`
+                                    : goal.estimatedTimeMin || goal.estimatedTimeMax || '-'}
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
@@ -377,6 +422,7 @@ export default function Profile() {
     const [originalData, setOriginalData] = useState<any>(null);
     const [athleteName, setAthleteName] = useState('Athlete');
     const [athleteImage, setAthleteImage] = useState<string | null>(null);
+    const [calculatingIndex, setCalculatingIndex] = useState<number | null>(null);
 
     // Flags to track if zones are manually overridden
     const [overrides, setOverrides] = useState({
@@ -721,7 +767,7 @@ export default function Profile() {
                             <Trophy className="w-4 h-4" /> Season Goals
                         </h2>
                         {isEditing && (
-                            <button onClick={() => append({ title: '', date: '', priority: 'B', location: '', distance: '', goalTime: '', estimatedTime: '' })} className="text-xs bg-slate-800 px-3 py-1.5 rounded-lg text-white hover:bg-slate-700 font-bold transition-colors">
+                            <button onClick={() => append({ title: '', date: '', priority: 'B', location: '', distance: '', goalTime: '', estimatedTimeMin: '', estimatedTimeMax: '' })} className="text-xs bg-slate-800 px-3 py-1.5 rounded-lg text-white hover:bg-slate-700 font-bold transition-colors">
                                 + Add Event
                             </button>
                         )}
@@ -736,6 +782,26 @@ export default function Profile() {
                                 control={control}
                                 errors={errors}
                                 onDelete={() => remove(idx)}
+                                onCalculate={async (idx, distance) => {
+                                    setCalculatingIndex(idx);
+                                    try {
+                                        const res = await fetch('/api/race/predict', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ raceDistance: distance }),
+                                        });
+                                        if (res.ok) {
+                                            const prediction = await res.json();
+                                            setValue(`seasonGoals.${idx}.estimatedTimeMin`, prediction.estimatedTimeMin);
+                                            setValue(`seasonGoals.${idx}.estimatedTimeMax`, prediction.estimatedTimeMax);
+                                        }
+                                    } catch (err) {
+                                        console.error('Failed to calculate prediction:', err);
+                                    } finally {
+                                        setCalculatingIndex(null);
+                                    }
+                                }}
+                                isCalculating={calculatingIndex === idx}
                             />
                         ))}
                     </div>
