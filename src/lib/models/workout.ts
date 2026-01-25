@@ -4,17 +4,38 @@ export type AnyWorkout =
     | IBikeWorkout
     | IBikeOverUnderWorkout
     | ISwimWorkout
+    | ISoccerWorkout
+    | IRestWorkout
+    | IBrickWorkout
+    | IStrengthWorkout
 
-export type WorkoutType = 'Run' | 'Bike' | 'Swim' | 'Soccer'
+export type WorkoutType = 'Run' | 'Bike' | 'Swim' | 'Soccer' | 'Rest' | 'Brick' | 'Strength'
+
+export type EnrichedWorkout = AnyWorkout & {
+    targetPace?: string;
+    targetPower?: string;
+    targetCadence?: string;
+    targetRPE?: string;
+    zone?: string;
+    intervals?: Array<{
+        step: number;
+        name: string;
+        description: string;
+        isMain?: boolean;
+    }>;
+    intensityProfile?: number[];
+}
 
 export interface IWarmup {
     time?: number        // seconds
     distance?: number    // meters
+    description?: string
 }
 
 export interface ICoolDown {
     time?: number
     distance?: number
+    description?: string
 }
 
 export interface IMainSetBase {
@@ -32,6 +53,7 @@ export interface IWorkout {
     completed: boolean
 
     title: string
+    subtitle?: string
     description: string
 
     duration: number     // seconds
@@ -121,6 +143,31 @@ export interface ISwimWorkout extends IWorkout {
         warmup?: IWarmup
         drill?: ISwimDrill
         main: ISwimMainSet
+        coolDown?: ICoolDown
+    }
+}
+
+export interface ISoccerWorkout extends IWorkout {
+    type: 'Soccer'
+}
+
+export interface IRestWorkout extends IWorkout {
+    type: 'Rest'
+}
+
+export interface IBrickWorkout extends IWorkout {
+    type: 'Brick'
+}
+
+export interface IStrengthMainSet extends IMainSetBase {
+    exercises: string[]
+}
+
+export interface IStrengthWorkout extends IWorkout {
+    type: 'Strength'
+    workout: {
+        warmup?: IWarmup
+        main: IStrengthMainSet
         coolDown?: ICoolDown
     }
 }

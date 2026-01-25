@@ -1,6 +1,4 @@
-import React from 'react';
-import { Activity, Waves, Bike, Trophy, Zap, Clock } from 'lucide-react';
-import { IBikeOverUnderWorkout, IBikeWorkout, IRunWorkout, ISwimWorkout, IWorkout } from '@/lib/models/workout';
+import { AnyWorkout, IBikeOverUnderWorkout, IBikeWorkout, IRunWorkout, ISoccerWorkout, ISwimWorkout } from '@/lib/models/workout';
 
 export const user = {
     name: "Alex",
@@ -13,7 +11,7 @@ export const user = {
     height: 180
 };
 
-export const weeklySchedule: IWorkout[] = [
+export const weeklySchedule: AnyWorkout[] = [
     // WEEK 1 — Quality Baseline (05/01/2026 - 11/01/2026)
     // -------------------- MON --------------------
     {
@@ -54,7 +52,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Soccer practice",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- WED (RUN) --------------------
     {
@@ -110,7 +108,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Soccer practice",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- FRI --------------------
     {
@@ -239,7 +237,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- WED (RUN) --------------------
     {
@@ -295,7 +293,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- FRI --------------------
     {
@@ -334,7 +332,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Match",
         description: "Weekly competition.",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- SUN --------------------
     {
@@ -395,7 +393,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- WED (RUN) --------------------
     {
@@ -457,7 +455,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // -------------------- FRI --------------------
     {
@@ -539,7 +537,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Match",
         description: "Weekly competition.",
         duration: 5400,
-    },
+    } as ISoccerWorkout,
 
     // WEEK 4 — Specific Power & Tempo (26/01/2026 - 01/02/2026)
     {
@@ -560,7 +558,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    } as ISoccerWorkout,
     {
         day: "Wed", date: "28", fullDate: "2026-01-28",
         type: "Run", completed: false,
@@ -591,7 +589,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    } as ISoccerWorkout,
     {
         day: "Fri", date: "30", fullDate: "2026-01-30",
         type: "Swim", completed: false,
@@ -610,7 +608,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Match",
         description: "Weekly competition.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Sun", date: "01", fullDate: "2026-02-01",
         type: "Run", completed: false,
@@ -641,7 +639,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Wed", date: "04", fullDate: "2026-02-04",
         type: "Run", completed: false,
@@ -672,7 +670,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Fri", date: "06", fullDate: "2026-02-06",
         type: "Swim", completed: false,
@@ -691,7 +689,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Match",
         description: "Weekly competition.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Sun", date: "08", fullDate: "2026-02-08",
         type: "Bike", completed: false,
@@ -732,7 +730,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Wed", date: "11", fullDate: "2026-02-11",
         type: "Run", completed: false,
@@ -763,7 +761,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Fri", date: "13", fullDate: "2026-02-13",
         type: "Swim", completed: false,
@@ -782,7 +780,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Match",
         description: "Weekly competition.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Sun", date: "15", fullDate: "2026-02-15",
         type: "Run", completed: false,
@@ -812,7 +810,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Wed", date: "18", fullDate: "2026-02-18",
         type: "Run", completed: false,
@@ -843,7 +841,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Practice",
         description: "Regular training session.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Fri", date: "20", fullDate: "2026-02-20",
         type: "Swim", completed: false,
@@ -860,7 +858,7 @@ export const weeklySchedule: IWorkout[] = [
         title: "Soccer Match",
         description: "Low intensity football match.",
         duration: 5400
-    } as IWorkout,
+    },
     {
         day: "Sun", date: "22", fullDate: "2026-02-22",
         type: "Run", completed: false,

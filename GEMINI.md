@@ -5,7 +5,7 @@ Reference this document before every major feature implementation to ensure cons
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router)
 - **Styling**: Tailwind CSS v4
-- **Language**: JavaScript (ES6+)
+- **Language**: TypeScript (ES6+)
 - **State Management**: React Hooks (`useState`, `useReducer`, `useContext`) - Avoid external libraries unless necessary.
 - **Data Fetching**: Native `fetch` with caching or React Query (if installed).
 - **PWA**: Native Next.js manifest + service worker (Turbopack compatible)
@@ -45,7 +45,7 @@ Follow this structured plan for every new feature:
 ### 2. Styling (Tailwind CSS)
 - **Utility-First**: Use utility classes for 90% of styling.
 - **`cn` Utility**: Always use the `cn` (`clsx` + `tailwind-merge`) helper for conditional class names.
-  ```javascript
+  ```typescript
   // Good
   <div className={cn("p-4 rounded-xl", isActive ? "bg-blue-500" : "bg-slate-900")}>
   ```

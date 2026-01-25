@@ -1,41 +1,60 @@
+import { Collection } from 'mongodb';
 import { getCollection } from '../mongodb';
 
 const COLLECTION_NAME = 'athletes';
 
-/**
- * @typedef {Object} AthleteDocument
- * @property {number} stravaId - Strava athlete ID
- * @property {string} accessToken - Current OAuth access token
- * @property {string} refreshToken - Long-lived refresh token
- * @property {number} expiresAt - Token expiration timestamp (seconds)
- * @property {Object} athlete - Strava athlete profile data
- * @property {Object} [biometrics] - Athlete biometrics
- * @property {number} [biometrics.weight] - Weight in kg
- * @property {number} [biometrics.height] - Height in cm
- * @property {number} [biometrics.restingHR] - Resting Heart Rate
- * @property {number} [biometrics.maxHR] - Max Heart Rate
- * @property {number} [biometrics.ftp] - FTP in Watts
- * @property {string} [biometrics.css] - Critical Swim Speed (MM:SS)
- * @property {Object} [trainingZones] - calculated or overridden zones
- * @property {Object} [trainingZones.hr] - Heart Rate Zones
- * @property {Object} [trainingZones.cycling] - Cycling Power Zones
- * @property {Object} [trainingZones.swimming] - Swimming Pace Zones
- * @property {Array<{title: string, date: string, location: string, priority: string, distance: string, goalTime: string, estimatedTime: string, progress: number}>} [seasonGoals] - Season goals/races
- * @property {Date} createdAt - Document creation timestamp
- * @property {Date} updatedAt - Last update timestamp
- */
+export interface AthleteDocument {
+    stravaId: number;
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: number;
+    athlete: {
+        firstname?: string;
+        lastname?: string;
+        profile?: string;
+        city?: string;
+        state?: string;
+        country?: string;
+        [key: string]: any;
+    };
+    biometrics?: {
+        weight: number;
+        height: number;
+        restingHR: number;
+        maxHR: number;
+        ftp: number;
+        css: string;
+    };
+    trainingZones?: {
+        hr: unknown[];
+        cycling: unknown[];
+        swimming: unknown[];
+    };
+    seasonGoals?: Array<{
+        title: string;
+        date: string;
+        location: string;
+        priority: string;
+        distance: string;
+        goalTime: string;
+        estimatedTime: string;
+        progress: number;
+    }>;
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 /**
  * Get the athletes collection with indexes ensured
- * @returns {Promise<import('mongodb').Collection<AthleteDocument>>}
+ * @returns {Promise<Collection<AthleteDocument>>}
  */
-export async function getAthletesCollection() {
+export async function getAthletesCollection(): Promise<Collection<AthleteDocument>> {
     const collection = await getCollection(COLLECTION_NAME);
 
     // Ensure indexes (idempotent operation)
     await collection.createIndex({ stravaId: 1 }, { unique: true });
 
-    return collection;
+    return collection as unknown as Collection<AthleteDocument>;
 }
 
 /**
@@ -43,9 +62,9 @@ export async function getAthletesCollection() {
  * @param {number} stravaId 
  * @returns {Promise<AthleteDocument | null>}
  */
-export async function findAthleteByStravaId(stravaId) {
+export async function findAthleteByStravaId(stravaId: number): Promise<AthleteDocument | null> {
     const collection = await getAthletesCollection();
-    return collection.findOne({ stravaId: Number(stravaId) });
+    return collection.findOne({ stravaId: Number(stravaId) }) as Promise<AthleteDocument | null>;
 }
 
 /**
@@ -54,7 +73,7 @@ export async function findAthleteByStravaId(stravaId) {
  * @param {Partial<AthleteDocument>} data 
  * @returns {Promise<AthleteDocument>}
  */
-export async function upsertAthlete(stravaId, data) {
+export async function upsertAthlete(stravaId: number, data: Partial<AthleteDocument>): Promise<AthleteDocument | null> {
     const collection = await getAthletesCollection();
 
     const now = new Date();
@@ -76,7 +95,7 @@ export async function upsertAthlete(stravaId, data) {
         }
     );
 
-    return result;
+    return result as unknown as AthleteDocument | null;
 }
 
 /**
@@ -87,7 +106,7 @@ export async function upsertAthlete(stravaId, data) {
  * @param {number} expiresAt 
  * @returns {Promise<void>}
  */
-export async function updateAthleteTokens(stravaId, accessToken, refreshToken, expiresAt) {
+export async function updateAthleteTokens(stravaId: number, accessToken: string, refreshToken: string, expiresAt: number): Promise<void> {
     const collection = await getAthletesCollection();
 
     await collection.updateOne(
