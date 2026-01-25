@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { weeklySchedule } from '@/data/mockData';
 
-export const useMonthlyWorkouts = (date) => {
+export const useMonthlyWorkouts = (date: Date) => {
     // Helper: Get padded full month range (including days from prev/next months to fill rows)
-    const getMonthRange = (inputDate) => {
+    const getMonthRange = (inputDate: Date) => {
         const year = inputDate.getFullYear();
         const month = inputDate.getMonth();
 
@@ -41,11 +41,11 @@ export const useMonthlyWorkouts = (date) => {
 
         // Generate all days in the range
         const days = [];
-        let current = new Date(start);
+        const current = new Date(start);
         const endValue = end.valueOf();
 
         while (current.valueOf() <= endValue) {
-            const dateStr = current.toISOString().split('T')[0];
+            const dateStr = current.toLocaleDateString('en-CA');
             const isToday = dateStr === new Date().toLocaleDateString('en-CA');
             const isCurrentMonth = current.getMonth() === d.getMonth();
 

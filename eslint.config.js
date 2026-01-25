@@ -1,17 +1,18 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import tseslint from 'typescript-eslint'
 
-export default defineConfig([
-  globalIgnores(['dist', '.next', 'node_modules']),
-  // Client-side files
+export default tseslint.config(
+  { ignores: ['dist', '.next', 'node_modules', 'public'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    files: ['src/app/**/*.{js,jsx}', 'src/components/**/*.{js,jsx}', 'src/hooks/**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs.flat.recommended,
-    ],
+    // Client-side files
+    files: ['src/app/**/*.{js,jsx,ts,tsx}', 'src/components/**/*.{js,jsx,ts,tsx}', 'src/hooks/**/*.{js,jsx,ts,tsx}'],
+    plugins: {
+      'react-hooks': reactHooks,
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -22,13 +23,16 @@ export default defineConfig([
       },
     },
     rules: {
+      ...reactHooks.configs.recommended.rules,
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
   // Server-side / lib files (Node.js globals)
   {
-    files: ['src/lib/**/*.js', 'src/app/api/**/*.js'],
-    extends: [js.configs.recommended],
+    files: ['src/lib/**/*.{js,ts}', 'src/app/api/**/*.{js,ts}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: { ...globals.node, ...globals.browser },
@@ -39,22 +43,21 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
-  // Data files
+  // Root / config files
   {
-    files: ['src/data/**/*.js'],
-    extends: [js.configs.recommended],
+    files: ['*.js', '*.mjs', '*.config.{js,mjs}', 'next.config.js'],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
+      globals: { ...globals.node },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
-    },
-  },
-])
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-undef': 'off',
+    }
+  }
+)
