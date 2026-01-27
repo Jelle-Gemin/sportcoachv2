@@ -1,10 +1,9 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-interface cardProps {
+interface cardProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode;
     className?: string;
-    props?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 const Card = ({ children, className, ...props }: cardProps) => {

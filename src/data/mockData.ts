@@ -21,7 +21,7 @@ export const weeklySchedule: AnyWorkout[] = [
         type: "Swim",
         completed: true,
         title: "Swim Tech",
-        description: "Catch-up met pull-buoy & steady sets.",
+        description: "8 x 25mCatch-up met pull-buoy & 12 x 50m steady sets.",
         duration: 2100,
         distance: 0.95,
         workout: {
@@ -118,7 +118,7 @@ export const weeklySchedule: AnyWorkout[] = [
         type: "Swim",
         completed: true,
         title: "Swim Endurance",
-        description: "Fist Drill & 10x50m @ RPE 7.",
+        description: "6 x 50mFist Drill & 10x50m @ RPE 7 met pull-buoy.",
         duration: 1800,
         distance: 0.7,
         workout: {
@@ -540,6 +540,21 @@ export const weeklySchedule: AnyWorkout[] = [
     } as ISoccerWorkout,
 
     // WEEK 4 — Specific Power & Tempo (26/01/2026 - 01/02/2026)
+
+    {
+        day: "Mon", date: "26", fullDate: "2026-01-26",
+        type: "Run", completed: false,
+        title: "Key Session: Run Quality",
+        description: "2x4km @ 4:15/km (rec: 1km EZ).",
+        duration: 3600,
+        workout: {
+            warmup: { time: 900 },
+            main: { distance: 4000, sets: 2, pace: "4:15/km", rest: 300 },
+            coolDown: { time: 300 }
+        }
+    } as IRunWorkout,
+
+
     {
         day: "Mon", date: "26", fullDate: "2026-01-26",
         type: "Swim", completed: false,
@@ -559,18 +574,7 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Regular training session.",
         duration: 5400
     } as ISoccerWorkout,
-    {
-        day: "Wed", date: "28", fullDate: "2026-01-28",
-        type: "Run", completed: false,
-        title: "Key Session: Run Quality",
-        description: "2x4km @ 4:15/km (rec: 1km EZ).",
-        duration: 3600,
-        workout: {
-            warmup: { time: 900 },
-            main: { distance: 4000, sets: 2, pace: "4:15/km", rest: 300 },
-            coolDown: { time: 300 }
-        }
-    } as IRunWorkout,
+
     {
         day: "Wed", date: "28", fullDate: "2026-01-28",
         type: "Bike", completed: false,

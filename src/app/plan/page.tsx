@@ -502,6 +502,14 @@ function PlanContent() {
                     <p className="text-sm md:text-base text-slate-400">Week {weekNumber} • Build Phase {Math.ceil(weekNumber / 4)}</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
+                    {/*process.env.NODE_ENV === 'development' && (*/}
+                    <Link href="/plan/generate">
+                        <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-500/20 transition-all">
+                            <Zap className="w-4 h-4" />
+                            <span className="hidden sm:inline">Generate (Dev)</span>
+                        </button>
+                    </Link>
+
                     <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-800 flex-1 md:flex-none">
                         <Link
                             href="/plan?view=week"
