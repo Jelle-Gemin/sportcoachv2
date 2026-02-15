@@ -15,11 +15,13 @@ import { OtherSportsStep } from './wizard/OtherSportsStep';
 import { WeeklyHoursStep } from './wizard/WeeklyHoursStep';
 import { DoubleTrainingStep } from './wizard/DoubleTrainingStep';
 import { RestDaysStep } from './wizard/RestDaysStep';
+import { StartDateStep } from './wizard/StartDateStep';
 import { SummaryStep } from './wizard/SummaryStep';
 import { PlanPreview } from './PlanPreview';
 
 const STEPS = [
     { id: 'focus', title: 'Focus' },
+    { id: 'date', title: 'Start' },
     { id: 'sports', title: 'Sports' },
     { id: 'hours', title: 'Volume' },
     { id: 'double', title: 'Doubles' },
@@ -47,6 +49,7 @@ export function PlanGenerationWizard() {
             totalWeeklyHours: 10,
             doubleTrainingDays: [],
             mandatoryRestDays: [],
+            startDate: new Date().toISOString().split('T')[0],
         }
     });
 
@@ -121,6 +124,8 @@ export function PlanGenerationWizard() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     workouts: generatedPlan.workouts,
+                    paceZones: generatedPlan.paceZones,
+                    planTitle: generatedPlan.planTitle,
                     clearFuture: true
                 }),
             });
@@ -150,11 +155,12 @@ export function PlanGenerationWizard() {
 
         switch (currentStep) {
             case 0: return <TrainingFocusStep seasonGoals={seasonGoals} />;
-            case 1: return <OtherSportsStep />;
-            case 2: return <WeeklyHoursStep />;
-            case 3: return <DoubleTrainingStep />;
-            case 4: return <RestDaysStep />;
-            case 5: return <SummaryStep />;
+            case 1: return <StartDateStep />;
+            case 2: return <OtherSportsStep />;
+            case 3: return <WeeklyHoursStep />;
+            case 4: return <DoubleTrainingStep />;
+            case 5: return <RestDaysStep />;
+            case 6: return <SummaryStep />;
             default: return null;
         }
     };

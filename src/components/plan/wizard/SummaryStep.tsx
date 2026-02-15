@@ -30,10 +30,11 @@ export function SummaryStep() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SummaryCard title="Focus" value={data.trainingFocus === 'race' ? 'Race Prep' : 'General Fitness'} />
+                <SummaryCard title="Start Date" value={new Date(data.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} />
                 <SummaryCard title="Weekly Volume" value={`${data.totalWeeklyHours} Hours`} />
                 <SummaryCard title="Double Days" value={doubleDays} />
                 <SummaryCard title="Blocked Days" value={restDays} />
-                <SummaryCard title="Other Sports" value={otherSports} className="md:col-span-2" />
+                <SummaryCard title="Other Sports" value={otherSports} />
             </div>
 
             <div className="pt-8 flex justify-center">

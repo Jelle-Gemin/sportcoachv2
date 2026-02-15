@@ -43,6 +43,7 @@ interface TrainingZones {
     hr: Zone[];
     cycling: Zone[];
     swimming: Zone[];
+    running: Zone[];
 }
 
 interface ProfileFormData {
@@ -128,6 +129,7 @@ const validationSchema = yup.object().shape({
         hr: yup.array().nullable(),
         cycling: yup.array().nullable(),
         swimming: yup.array().nullable(),
+        running: yup.array().nullable(),
     }).required()
 });
 
@@ -428,7 +430,8 @@ export default function Profile() {
     const [overrides, setOverrides] = useState({
         hr: false,
         cycling: false,
-        swimming: false
+        swimming: false,
+        running: false
     });
 
     const {
@@ -442,7 +445,7 @@ export default function Profile() {
         resolver: yupResolver(validationSchema as any),
         defaultValues: {
             biometrics: { weight: null, height: null, restingHR: null, maxHR: null, ftp: null, css: null } as Biometrics,
-            trainingZones: { hr: [], cycling: [], swimming: [] } as TrainingZones,
+            trainingZones: { hr: [], cycling: [], swimming: [], running: [] } as TrainingZones,
             seasonGoals: [] as Goal[]
         },
         mode: 'onChange'
@@ -499,6 +502,7 @@ export default function Profile() {
                         hr: zones.hr && zones.hr.length > 0 && JSON.stringify(zones.hr) !== JSON.stringify(calculatedHR),
                         cycling: zones.cycling && zones.cycling.length > 0 && JSON.stringify(zones.cycling) !== JSON.stringify(calculatedCycling),
                         swimming: zones.swimming && zones.swimming.length > 0 && JSON.stringify(zones.swimming) !== JSON.stringify(calculatedSwim),
+                        running: false // No default calculation for running yet
                     });
                 }
             } catch (err) {
@@ -756,6 +760,17 @@ export default function Profile() {
                             onChange={handleZoneChange}
                             isOverridden={overrides.swimming}
                             onReset={() => resetZones('swimming')}
+                        />
+
+                        {/* Running Zones */}
+                        <ZoneTable
+                            title="Pace (Running)"
+                            zones={trainingZones?.running || []}
+                            type="running"
+                            editing={isEditing}
+                            onChange={handleZoneChange}
+                            isOverridden={overrides.running} // Assuming overrides logic might be needed here too
+                            onReset={() => resetZones('running')}
                         />
                     </div>
                 </section>

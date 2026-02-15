@@ -20,6 +20,7 @@ export interface ITrainingPlanResponse {
     planTitle: string;
     planDescription: string;
     workouts: AnyWorkout[];
+    paceZones: Array<{ name: string; min: string; max: string }>;
     predictedRaceTimes: IAIPredictedRaceTime[];
 }
 
@@ -31,6 +32,7 @@ export interface IOtherSportConfig {
     scheduledDays: number[];     // 0=Monday, 1=Tuesday, ..., 6=Sunday
     trainOnSameDays: boolean;    // Train extra on these days?
     durationMode: 'fixed' | 'daily';
+    fatigueLevel: 'low' | 'medium' | 'high'; // Added fatigue level
     hoursPerSession?: string;    // Used if durationMode is 'fixed'. HH:MM:SS format
     dailyHours?: Record<number, string>; // Used if durationMode is 'daily' (key is day index 0-6, Value is HH:MM:SS)
 }
@@ -55,6 +57,9 @@ export interface IPlanGenerationMetadata {
 
     // Step 5: Rest Days
     mandatoryRestDays: number[];   // Days with no sports allowed (0=Monday, ..., 6=Sunday)
+
+    // Step 6: Start Date
+    startDate: string;             // YYYY-MM-DD format
 
     // Metadata
     createdAt: Date;

@@ -55,16 +55,20 @@ export async function POST(request: Request) {
             await workoutsCollection.insertMany(newWorkouts);
         }
 
-        // 4. Update Athlete's Current Plan Metadata
+        // 4. Update Athlete's Current Plan Metadata & Pace Zones
+        const updateFields: any = {
+            'currentPlan.active': true,
+            'currentPlan.generatedAt': new Date(),
+            'currentPlan.title': body.planTitle || 'AI Custom Plan'
+        };
+
+        if (body.paceZones && Array.isArray(body.paceZones)) {
+            updateFields['trainingZones.running'] = body.paceZones;
+        }
+
         await athletesCollection.updateOne(
             { _id: athlete._id },
-            {
-                $set: {
-                    'currentPlan.active': true,
-                    'currentPlan.generatedAt': new Date(),
-                    'currentPlan.title': body.planTitle || 'AI Custom Plan'
-                }
-            }
+            { $set: updateFields }
         );
 
         return NextResponse.json({ success: true, count: newWorkouts.length });

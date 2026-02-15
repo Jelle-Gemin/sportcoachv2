@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
-import { Plus, X, Calendar, Clock, Settings2 } from 'lucide-react';
+import { Plus, X, Calendar, Clock, Settings2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IPlanGenerationMetadata } from '@/lib/models/trainingPlan';
 import Card from '@/components/ui/Card';
@@ -81,32 +81,59 @@ export function OtherSportsStep() {
                                         />
                                     </div>
 
-                                    {/* Duration Mode Toggle */}
-                                    <div className="space-y-3">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                            <Settings2 className="w-3 h-3" /> Duration Mode
-                                        </label>
-                                        <div className="flex bg-slate-950/50 p-1 rounded-xl border border-slate-800 w-fit">
-                                            <button
-                                                type="button"
-                                                onClick={() => setValue(`otherSports.${index}.durationMode`, 'fixed')}
-                                                className={cn(
-                                                    "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                                    durationMode === 'fixed' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "text-slate-500 hover:text-slate-300"
-                                                )}
-                                            >
-                                                Same every day
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setValue(`otherSports.${index}.durationMode`, 'daily')}
-                                                className={cn(
-                                                    "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                                                    durationMode === 'daily' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "text-slate-500 hover:text-slate-300"
-                                                )}
-                                            >
-                                                Differs per day
-                                            </button>
+                                    {/* Duration Mode & Fatigue Level Row */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Duration Mode Toggle */}
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                                <Settings2 className="w-3 h-3" /> Duration Mode
+                                            </label>
+                                            <div className="flex bg-slate-950/50 p-1 rounded-xl border border-slate-800 w-fit">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setValue(`otherSports.${index}.durationMode`, 'fixed')}
+                                                    className={cn(
+                                                        "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                                        durationMode === 'fixed' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "text-slate-500 hover:text-slate-300"
+                                                    )}
+                                                >
+                                                    Same every day
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setValue(`otherSports.${index}.durationMode`, 'daily')}
+                                                    className={cn(
+                                                        "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                                        durationMode === 'daily' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "text-slate-500 hover:text-slate-300"
+                                                    )}
+                                                >
+                                                    Differs per day
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Fatigue Level Selector */}
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                                <Sparkles className="w-3 h-3" /> Fatigue Level
+                                            </label>
+                                            <div className="flex bg-slate-950/50 p-1 rounded-xl border border-slate-800 w-fit">
+                                                {(['low', 'medium', 'high'] as const).map((level) => (
+                                                    <button
+                                                        key={level}
+                                                        type="button"
+                                                        onClick={() => setValue(`otherSports.${index}.fatigueLevel`, level)}
+                                                        className={cn(
+                                                            "px-4 py-1.5 rounded-lg text-xs font-bold transition-all capitalize",
+                                                            watch(`otherSports.${index}.fatigueLevel`) === level
+                                                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                                                                : "text-slate-500 hover:text-slate-300"
+                                                        )}
+                                                    >
+                                                        {level}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -162,25 +189,27 @@ export function OtherSportsStep() {
                                     </div>
 
                                     {/* Fixed Duration Input (Conditional) */}
-                                    {durationMode === 'fixed' && scheduledDays.length > 0 && (
-                                        <div className="space-y-2 animate-in fade-in slide-in-from-left-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duration per session (hh:mm:ss)</label>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="text"
-                                                    {...register(`otherSports.${index}.hoursPerSession` as const, {
-                                                        required: true,
-                                                        pattern: /^([0-9][0-9]):([0-5][0-9]):([0-5][0-9])$/
-                                                    })}
-                                                    value={watch(`otherSports.${index}.hoursPerSession`) || ''}
-                                                    onChange={(e) => setValue(`otherSports.${index}.hoursPerSession`, formatTimeInput(e.target.value))}
-                                                    placeholder="01:30:00"
-                                                    className="w-32 bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 outline-none font-mono"
-                                                />
-                                                <span className="text-sm text-slate-500 font-medium">per session</span>
+                                    {
+                                        durationMode === 'fixed' && scheduledDays.length > 0 && (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-left-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duration per session (hh:mm:ss)</label>
+                                                <div className="flex items-center gap-3">
+                                                    <input
+                                                        type="text"
+                                                        {...register(`otherSports.${index}.hoursPerSession` as const, {
+                                                            required: true,
+                                                            pattern: /^([0-9][0-9]):([0-5][0-9]):([0-5][0-9])$/
+                                                        })}
+                                                        value={watch(`otherSports.${index}.hoursPerSession`) || ''}
+                                                        onChange={(e) => setValue(`otherSports.${index}.hoursPerSession`, formatTimeInput(e.target.value))}
+                                                        placeholder="01:30:00"
+                                                        className="w-32 bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 outline-none font-mono"
+                                                    />
+                                                    <span className="text-sm text-slate-500 font-medium">per session</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )
+                                    }
 
                                     {/* Same Day Checkbox */}
                                     <div className="flex items-center gap-3 pt-2">
@@ -208,6 +237,7 @@ export function OtherSportsStep() {
                             scheduledDays: [],
                             trainOnSameDays: false,
                             durationMode: 'fixed',
+                            fatigueLevel: 'medium',
                             hoursPerSession: '01:00:00',
                             dailyHours: {}
                         })}
@@ -216,8 +246,8 @@ export function OtherSportsStep() {
                         <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         Add Another Activity
                     </button>
-                </div>
+                </div >
             )}
-        </div>
+        </div >
     );
 }

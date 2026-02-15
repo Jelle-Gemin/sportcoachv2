@@ -26,9 +26,10 @@ export interface AthleteDocument {
         css: string;
     };
     trainingZones?: {
-        hr: unknown[];
-        cycling: unknown[];
-        swimming: unknown[];
+        hr: any[];
+        cycling: any[];
+        swimming: any[];
+        running: any[];
     };
     seasonGoals?: Array<{
         title: string;
