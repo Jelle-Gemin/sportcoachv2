@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar as CalendarIcon, Filter, ChevronLeft, ChevronRight, Clock, Zap, CheckCircle2, TrendingUp, GripVertical } from 'lucide-react';
+import { Calendar as CalendarIcon, Filter, ChevronLeft, ChevronRight, Clock, Zap, CheckCircle2, TrendingUp, GripVertical, Download, X } from 'lucide-react';
 import { RunIcon, SwimIcon, BikeIcon, GymIcon, SoccerIcon, MultiIcon } from '@/components/icons/SportIcons';
 import { useWeeklyWorkouts } from '@/hooks/useWeeklyWorkouts';
 import { useMonthlyWorkouts } from '@/hooks/useMonthlyWorkouts';
@@ -291,6 +291,10 @@ function PlanContent() {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [activeSlide, setActiveSlide] = useState(0);
     const [todayStr, setTodayStr] = useState('');
+    const [showExportModal, setShowExportModal] = useState(false);
+    const [exportStartDate, setExportStartDate] = useState('');
+    const [exportEndDate, setExportEndDate] = useState('');
+    const [isExporting, setIsExporting] = useState(false);
 
     useEffect(() => {
         setTodayStr(new Date().toLocaleDateString('en-CA'));
@@ -492,6 +496,31 @@ function PlanContent() {
         }
     }, [selectedDate, viewMode]);
 
+    // Export handler
+    const handleExport = async () => {
+        if (!exportStartDate || !exportEndDate) return;
+        setIsExporting(true);
+        try {
+            const res = await fetch(`/api/plan/export?startDate=${exportStartDate}&endDate=${exportEndDate}`);
+            if (!res.ok) throw new Error(await res.text());
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `workout-history_${exportStartDate}_${exportEndDate}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            setShowExportModal(false);
+        } catch (err) {
+            console.error('Export failed:', err);
+            alert('Export failed. Check the console for details.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
 
     return (
         <div className="px-4 py-6 md:px-6 md:py-8 max-w-7xl mx-auto space-y-6 md:space-y-8 select-none">
@@ -502,6 +531,22 @@ function PlanContent() {
                     <p className="text-sm md:text-base text-slate-400">Week {weekNumber} • Build Phase {Math.ceil(weekNumber / 4)}</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
+                    <button
+                        onClick={() => setShowExportModal(true)}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-bold rounded-xl flex items-center gap-2 border border-slate-700 transition-all"
+                    >
+                        <Download className="w-4 h-4" />
+                        <span className="hidden sm:inline">Export</span>
+                    </button>
+
+                    {/*process.env.NODE_ENV === 'development' && (*/}
+                    <Link href="/plan/generate">
+                        <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-500/20 transition-all">
+                            <Zap className="w-4 h-4" />
+                            <span className="hidden sm:inline">Generate (Dev)</span>
+                        </button>
+                    </Link>
+
                     <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-800 flex-1 md:flex-none">
                         <Link
                             href="/plan?view=week"
@@ -748,6 +793,66 @@ function PlanContent() {
                         ) : null}
                     </DragOverlay>
                 </DndContext>
+            )}
+
+            {/* Export Modal */}
+            {showExportModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-white">Export Workout History</h2>
+                            <button onClick={() => setShowExportModal(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-sm text-slate-400">Select a date range to export your planned vs actual workout data as JSON.</p>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={exportStartDate}
+                                    onChange={e => setExportStartDate(e.target.value)}
+                                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">End Date</label>
+                                <input
+                                    type="date"
+                                    value={exportEndDate}
+                                    onChange={e => setExportEndDate(e.target.value)}
+                                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={() => setShowExportModal(false)}
+                                className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold rounded-xl border border-slate-700 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleExport}
+                                disabled={!exportStartDate || !exportEndDate || isExporting}
+                                className={cn(
+                                    "flex-1 px-4 py-2.5 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all",
+                                    exportStartDate && exportEndDate && !isExporting
+                                        ? "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                                        : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                                )}
+                            >
+                                {isExporting ? (
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <Download className="w-4 h-4" />
+                                )}
+                                {isExporting ? 'Exporting...' : 'Export'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

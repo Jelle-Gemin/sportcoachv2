@@ -22,11 +22,13 @@ export function calculateExecutionScore(planned: AnyWorkout | null, actual: Acti
         return calculateAggregateScore(planned, actual);
     }
 
-    const { workLaps, restLaps } = identifyLaps(actual, planned, planned.type);
+    const { workLaps, restLaps } = identifyLaps(actual, planned, planned.type, userFtp);
 
     let volumeScore = 0;
     let qualityScore = 0;
     let restScore = 100;
+    let normalizedTarget = 0;
+    let normalizedActual = 0;
 
     // 1. Volume Score (40%)
     if (mainSet.sets) {
@@ -46,8 +48,7 @@ export function calculateExecutionScore(planned: AnyWorkout | null, actual: Acti
         // existing code: const targetVolume = mainSet.distance || (mainSet.time ? mainSet.time / 60 : planned.duration);
         // existing actualVolume: actual.distance / 1000 || actual.movingTime / 60;
 
-        let normalizedTarget = 0;
-        let normalizedActual = 0;
+
 
         if ((mainSet as any).distance) {
             const mDist = (mainSet as any).distance;
@@ -67,7 +68,28 @@ export function calculateExecutionScore(planned: AnyWorkout | null, actual: Acti
             }
             normalizedActual = actual.distance / 1000;
         } else {
-            normalizedTarget = ((mainSet as any).time ? (mainSet as any).time / 60 : planned.duration / 60); // minutes
+            // Calculate planned duration in seconds
+            let plannedSeconds = planned.duration;
+
+            // Fallback: Calculate from structure if duration is missing or suspicious (< 5 mins)
+            if (!plannedSeconds || plannedSeconds < 300) {
+                const pAny = planned as any;
+                const warmup = pAny.workout?.warmup?.time || 0;
+                const cooldown = pAny.workout?.coolDown?.time || 0;
+                const sets = mainSet?.sets || 1;
+                const repTime = mainSet ? calculateTargetTime(mainSet) : 0; // Returns one rep time (or on+off)
+                const repRest = mainSet?.rest || 0;
+
+                // Total main set = (sets * repTime) + (rest between sets)
+                const mainSection = (repTime ? sets * repTime : 0) + (repRest * Math.max(0, sets - 1));
+
+                const calculated = warmup + mainSection + cooldown;
+                if (calculated > 0) plannedSeconds = calculated;
+            }
+
+            if (!plannedSeconds) plannedSeconds = 3600; // Final fallback
+
+            normalizedTarget = plannedSeconds / 60; // minutes
             normalizedActual = actual.movingTime / 60;
         }
 
@@ -111,30 +133,46 @@ export function calculateExecutionScore(planned: AnyWorkout | null, actual: Acti
 
 
     // Weighted average
-    let finalScore;
+    // Weighted average
+    let finalScore = 0;
     if (planned.type === 'Swim') {
         finalScore = (volumeScore * 0.6) + (qualityScore * 0.4);
     } else {
-        const restWeight = mainSet.rest ? 0.2 : 0;
-        const workWeight = (1 - restWeight) / 2;
-        finalScore = (volumeScore * workWeight) + (qualityScore * workWeight) + (restScore * restWeight);
+        const hasRest = !!mainSet.rest;
+        // Weights: Rest 0.2, Vol 0.4, Qual 0.4
+        // If no rest: Vol 0.5, Qual 0.5
+        const restWeight = hasRest ? 0.2 : 0;
+        const otherWeight = (1 - restWeight) / 2;
+
+        finalScore = (volumeScore * otherWeight) + (qualityScore * otherWeight) + (restScore * restWeight);
     }
 
-    return Math.round(finalScore);
+    const roundedScore = Math.round(finalScore);
+
+    // DEBUG LOG for user verification
+    console.log(`[ScoreDebug] '${planned.title || 'Workout'}': Final=${roundedScore}, Vol=${Math.round(volumeScore)} (Plan:${Math.round(normalizedTarget)} Act:${Math.round(normalizedActual)}), Qual=${Math.round(qualityScore)}, Rest=${Math.round(restScore)}`);
+
+    return roundedScore;
 }
 
 /**
  * Identify which laps are "Work" and which are "Rest"
+ *
+ * Handles:
+ *   - Standard interval workouts (distance- or time-based sets)
+ *   - Over/Under workouts (alternating on/off blocks within each set)
+ *   - Fartlek / time-based intervals where rest is a recovery jog (not standing still)
+ *   - Swim workouts with drill/warmup/cooldown structure
  */
-function identifyLaps(actual: ActivityDocument, workout: AnyWorkout, type: string): { workLaps: LapData[], restLaps: LapData[] } {
+function identifyLaps(actual: ActivityDocument, workout: AnyWorkout, type: string, userFtp: number = 250): { workLaps: (LapData & { lapType?: string })[], restLaps: (LapData & { lapType?: string })[] } {
     if (!actual.laps) return { workLaps: [], restLaps: [] };
 
     // Need to access main set safely
     const anyWorkout = workout as unknown as { workout?: { main?: any, drill?: any, warmup?: any, coolDown?: any } };
     const mainSet = anyWorkout.workout?.main || {};
 
-    // Only separate drill/warmup/cooldown for Swim
     const isSwim = type === 'Swim';
+    const isOverUnder = !!(mainSet.on && mainSet.off);
 
     // Extract targets
     const mainDist = mainSet.distance ? (mainSet.distance < 50 ? mainSet.distance * 1000 : mainSet.distance) : null;
@@ -152,39 +190,29 @@ function identifyLaps(actual: ActivityDocument, workout: AnyWorkout, type: strin
     const coolDownDist = coolDownSet.distance ? (coolDownSet.distance < 50 ? coolDownSet.distance * 1000 : coolDownSet.distance) : null;
 
 
-    const workLaps: LapData[] = [];
-    const restLaps: LapData[] = [];
+    const workLaps: (LapData & { lapType?: string })[] = [];
+    const restLaps: (LapData & { lapType?: string })[] = [];
 
-    actual.laps.forEach((lap: LapData & { lapType?: string }) => {
-        const lapDist = lap.manualDistance ?? lap.distance;
-        const lapTime = lap.manualMovingTime ?? lap.movingTime;
-        const speed = lapDist / (lapTime || 1); // m/s
-
-        let matchFound = false;
-
+    if (isSwim) {
         // --- SWIM SPECIFIC MATCHING ---
-        if (isSwim) {
-            // Tolerance (25%)
+        actual.laps.forEach((lap: LapData & { lapType?: string }) => {
+            const lapDist = lap.manualDistance ?? lap.distance;
             const tolerance = 0.25;
+            let matchFound = false;
 
-            // 1. Check Warmup
             if (warmupDist && !matchFound) {
                 if (Math.abs(lapDist - warmupDist) < (warmupDist * tolerance)) {
                     lap.lapType = 'warmup';
                     matchFound = true;
                 }
             }
-
-            // 2. Check Drill
             if (drillDist && !matchFound) {
                 if (Math.abs(lapDist - drillDist) < (drillDist * tolerance)) {
                     lap.lapType = 'drill';
                     matchFound = true;
-                    workLaps.push(lap); // Count drills as work
+                    workLaps.push(lap);
                 }
             }
-
-            // 3. Check Main
             if (mainDist && !matchFound) {
                 if (Math.abs(lapDist - mainDist) < (mainDist * tolerance)) {
                     lap.lapType = 'main';
@@ -192,28 +220,107 @@ function identifyLaps(actual: ActivityDocument, workout: AnyWorkout, type: strin
                     workLaps.push(lap);
                 }
             }
-
-            // 4. Check CoolDown
             if (coolDownDist && !matchFound) {
                 if (Math.abs(lapDist - coolDownDist) < (coolDownDist * tolerance)) {
                     lap.lapType = 'cooldown';
                     matchFound = true;
                 }
             }
-
-            // 5. Rest (Short distance)
             if (!matchFound && lapDist < 15) {
                 lap.lapType = 'rest';
                 matchFound = true;
                 restLaps.push(lap);
             }
+        });
+    } else if (isOverUnder) {
+        // --- OVER/UNDER WORKOUT (Bike) ---
+        // Structure: warmup → [on, off] x sets (with rest between sets) → cooldown
+        // When on/off have the same duration, classify by WATTS intensity, not time
+        const onTime = mainSet.on?.time || 0;
+        const offTime = mainSet.off?.time || 0;
+        const betweenSetRest = mainSet.rest || 0;
 
+        // Parse FTP-percentage watt targets for on/off classification
+        const onWattsPct = parseWattsPct(mainSet.on?.watts || '');
+        const offWattsPct = parseWattsPct(mainSet.off?.watts || '');
+        // Midpoint between on/off targets to split laps by intensity
+        const wattsMidpointPct = (onWattsPct && offWattsPct) ? (onWattsPct + offWattsPct) / 2 : 0;
+        const absMidpointWatts = (wattsMidpointPct / 100) * userFtp;
+
+        // Are on/off durations similar enough that time alone can't distinguish them?
+        const timesAreSimilar = onTime && offTime && Math.abs(onTime - offTime) < Math.max(15, Math.min(onTime, offTime) * 0.3);
+
+        // Combined on+off time = one "set block" duration
+        const setBlockTime = onTime + offTime;
+
+        // First: collect interval-candidate laps (matching on or off duration)
+        const intervalTolerance = 0.25;
+        const intervalLaps: (LapData & { lapType?: string })[] = [];
+
+        actual.laps.forEach((lap: LapData & { lapType?: string }) => {
+            const lapTime = lap.manualMovingTime ?? lap.movingTime;
+
+            // Check for between-set rest first
+            if (betweenSetRest && Math.abs(lapTime - betweenSetRest) < Math.max(20, betweenSetRest * 0.5)) {
+                lap.lapType = 'rest';
+                restLaps.push(lap);
+                return;
+            }
+
+            // Check if this is a combined on+off lap (some devices record the full set as one lap)
+            if (setBlockTime && Math.abs(lapTime - setBlockTime) < Math.max(20, setBlockTime * 0.2)) {
+                lap.lapType = 'work';
+                workLaps.push(lap);
+                return;
+            }
+
+            // Check if duration matches either on or off block
+            const matchesOn = onTime && Math.abs(lapTime - onTime) < Math.max(15, onTime * intervalTolerance);
+            const matchesOff = offTime && Math.abs(lapTime - offTime) < Math.max(15, offTime * intervalTolerance);
+
+            if (matchesOn || matchesOff) {
+                intervalLaps.push(lap);
+            }
+            // Else: unclassified (warmup, cooldown, etc.)
+        });
+
+        // Now classify the interval laps as on vs off
+        if (timesAreSimilar && absMidpointWatts > 0) {
+            // Times are equal — use watts to distinguish on (above midpoint) vs off (below)
+            for (const lap of intervalLaps) {
+                const lapWatts = lap.averageWatts || 0;
+                if (lapWatts >= absMidpointWatts) {
+                    lap.lapType = 'Over';
+                } else {
+                    lap.lapType = 'Under';
+                }
+                workLaps.push(lap);
+            }
+        } else if (timesAreSimilar) {
+            // Times are equal but no watts data — use alternating pattern (on, off, on, off, ...)
+            for (let i = 0; i < intervalLaps.length; i++) {
+                intervalLaps[i].lapType = (i % 2 === 0) ? 'Over' : 'Under';
+                workLaps.push(intervalLaps[i]);
+            }
         } else {
-            // --- NON-SWIM (RUN/BIKE) EXISTING LOGIC ---
+            // Times are different — classify by time match
+            for (const lap of intervalLaps) {
+                const lapTime = lap.manualMovingTime ?? lap.movingTime;
+                const matchesOn = onTime && Math.abs(lapTime - onTime) < Math.max(15, onTime * intervalTolerance);
+                lap.lapType = matchesOn ? 'Over' : 'Under';
+                workLaps.push(lap);
+            }
+        }
+    } else {
+        // --- STANDARD INTERVAL (RUN / BIKE) ---
+        // First pass: identify work laps by matching against prescribed distance or time
+        actual.laps.forEach((lap: LapData & { lapType?: string }) => {
+            const lapDist = lap.manualDistance ?? lap.distance;
+            const lapTime = lap.manualMovingTime ?? lap.movingTime;
 
-            // 1. Check if it's a Work Match
-            let isWorkMatch = false;
             const tolerance = 0.20;
+            let isWorkMatch = false;
+
             if (mainDist) {
                 isWorkMatch = Math.abs(lapDist - mainDist) < (mainDist * tolerance);
             } else if (mainTime) {
@@ -223,41 +330,101 @@ function identifyLaps(actual: ActivityDocument, workout: AnyWorkout, type: strin
             if (isWorkMatch) {
                 lap.lapType = 'work';
                 workLaps.push(lap);
-            } else if (mainRest) {
-                // 2. Check if it's a Rest Match
-                let isRestMatch = false;
+            }
+        });
+
+        // Second pass: identify rest laps
+        // Calculate median work pace/speed to compare against
+        let medianWorkSpeed = 0;
+        if (workLaps.length > 0) {
+            const workSpeeds = workLaps.map(l => {
+                const d = l.manualDistance ?? l.distance;
+                const t = l.manualMovingTime ?? l.movingTime;
+                return d / (t || 1);
+            }).sort((a, b) => a - b);
+            medianWorkSpeed = workSpeeds[Math.floor(workSpeeds.length / 2)];
+        }
+
+        actual.laps.forEach((lap: LapData & { lapType?: string }) => {
+            if (lap.lapType) return; // Already classified
+
+            const lapDist = lap.manualDistance ?? lap.distance;
+            const lapTime = lap.manualMovingTime ?? lap.movingTime;
+            const lapSpeed = lapDist / (lapTime || 1);
+
+            // Rest detection criteria:
+            let isRestMatch = false;
+
+            if (mainRest) {
+                // Has prescribed rest duration — check time match
                 const matchesRestTime = Math.abs(lapTime - mainRest) < Math.max(20, mainRest * 0.5);
 
                 if (type === 'Run') {
-                    // In run, recovery must be slow OR short distance
-                    let isMuchSlower = false;
-                    if (mainSet.pace && speed > 0) {
-                        const workPace = parsePace(mainSet.pace);
-                        const actualPace = 1000 / speed;
-                        isMuchSlower = actualPace > (workPace * 1.5);
+                    // For runs: rest = matches rest time AND is notably slower than work pace
+                    // OR matches rest time AND the athlete is barely moving
+                    let isSlowerThanWork = false;
+                    if (medianWorkSpeed > 0) {
+                        isSlowerThanWork = lapSpeed < medianWorkSpeed * 0.75;
                     }
-                    const isMinimalDist = lapDist < (mainDist * 0.4);
-                    isRestMatch = matchesRestTime && (isMinimalDist || isMuchSlower || speed < 0.5);
+                    // Also check against prescribed pace if available
+                    if (!isSlowerThanWork && mainSet.pace && lapSpeed > 0) {
+                        const workPace = parsePace(mainSet.pace); // s/km
+                        const actualPace = 1000 / lapSpeed;        // s/km
+                        isSlowerThanWork = actualPace > workPace * 1.3;
+                    }
+
+                    isRestMatch = matchesRestTime && (isSlowerThanWork || lapSpeed < 0.5);
                 } else {
+                    // Bike: just time matching is enough (rest usually = soft-pedaling or coasting)
                     isRestMatch = matchesRestTime;
                 }
+            } else if (workLaps.length > 0 && medianWorkSpeed > 0) {
+                // No prescribed rest, but we have work laps to compare against
+                // Use relative speed: rest = significantly slower than work efforts
+                // This handles fartlek where rest isn't explicitly timed
+                const isSignificantlySlower = lapSpeed < medianWorkSpeed * 0.65;
+                const isShort = mainTime ? lapTime < mainTime * 0.6 : (mainDist ? lapDist < mainDist * 0.5 : false);
 
-                if (isRestMatch) {
-                    lap.lapType = 'rest';
-                    restLaps.push(lap);
+                isRestMatch = isSignificantlySlower || isShort;
+            }
+
+            if (isRestMatch) {
+                lap.lapType = 'rest';
+                restLaps.push(lap);
+            }
+        });
+
+        // Third pass (alternating fallback): if there are unclassified laps between
+        // consecutive work laps, treat them as rest. This handles recovery jogs that
+        // don't exactly match time or pace thresholds.
+        if (workLaps.length >= 2) {
+            const lapArray = actual.laps as (LapData & { lapType?: string })[];
+            for (let i = 0; i < lapArray.length; i++) {
+                if (lapArray[i].lapType) continue; // Already classified
+
+                // Check if this unclassified lap sits between two work laps
+                const prevWork = lapArray.slice(0, i).findLastIndex(l => l.lapType === 'work' || l.lapType === 'work-on');
+                const nextWork = lapArray.slice(i + 1).findIndex(l => l.lapType === 'work' || l.lapType === 'work-on');
+
+                if (prevWork !== -1 && nextWork !== -1) {
+                    lapArray[i].lapType = 'rest';
+                    restLaps.push(lapArray[i]);
                 }
             }
         }
-    });
+    }
 
     return { workLaps, restLaps };
 }
 
 function calculateTargetTime(mainSet: IMainSetBase | IRunMainSet | IBikeMainSet | ISwimMainSet | any): number | null {
     if (mainSet.time) return mainSet.time;
+    // Over/under: combined on + off time per set
+    if (mainSet.on?.time && mainSet.off?.time) {
+        return mainSet.on.time + mainSet.off.time;
+    }
     if (mainSet.pace && mainSet.distance) {
         const targetPace = parsePace(mainSet.pace); // s/km
-        // Convert distance to km if it's meters
         const distKm = mainSet.distance > 50 ? mainSet.distance / 1000 : mainSet.distance;
         return targetPace * distKm;
     }
@@ -269,18 +436,59 @@ function calculateLapQuality(lap: LapData & { lapType?: string, description?: st
     const lapTime = lap.manualMovingTime ?? lap.movingTime;
     const lapSpeed = lapDist / lapTime; // m/s
 
+    // Helper to calculate buffered score
+    // 5% margin of error allowed = 100% score
+    const getBufferedScore = (target: number, actual: number) => {
+        if (!target) return 100;
+        const diff = Math.abs(target - actual);
+        const diffPct = diff / target;
+
+        if (diffPct <= 0.05) return 100;
+        // Linear decay after 5%
+        // e.g. 10% diff -> 5% penalty -> 95 score
+        return Math.max(0, 100 - (diffPct - 0.05) * 100);
+    };
+
     if (type === 'Run' && mainSet.pace) {
         const targetPace = parsePace(mainSet.pace); // s/km
         const actualPace = 1000 / lapSpeed;
-        return Math.max(0, 100 - (Math.abs(targetPace - actualPace) / targetPace) * 100);
+        return getBufferedScore(targetPace, actualPace);
     }
 
-    if (type === 'Bike' && mainSet.watts) {
-        const targetWatts = (parseInt(mainSet.watts) / 100) * userFtp;
-        const avgWatts = lap.averageWatts || (lap.averageHeartrate ? lap.averageHeartrate * 1.5 : 0);
-        const actualWatts = avgWatts;
-        if (!targetWatts) return 100;
-        return Math.max(0, 100 - (Math.abs(targetWatts - actualWatts) / targetWatts) * 100);
+    if (type === 'Bike') {
+        let targetWatts = 0;
+
+        if (mainSet.on && mainSet.off) {
+            // Over/Under workout
+            const onWattsPct = parseWattsPct(mainSet.on.watts);
+            const offWattsPct = parseWattsPct(mainSet.off.watts);
+
+            if (lap.lapType === 'work-on' && onWattsPct) {
+                targetWatts = (onWattsPct / 100) * userFtp;
+            } else if (lap.lapType === 'work-off' && offWattsPct) {
+                targetWatts = (offWattsPct / 100) * userFtp;
+            } else if (onWattsPct && offWattsPct) {
+                // Combined lap (lapType='work') -> Average of on/time and off/time
+                // Assume 1:1 time ratio for simplicity unless on.time/off.time known
+                const onTime = mainSet.on.time || 1;
+                const offTime = mainSet.off.time || 1;
+                const totalTime = onTime + offTime;
+                const avgPct = ((onWattsPct * onTime) + (offWattsPct * offTime)) / totalTime;
+                targetWatts = (avgPct / 100) * userFtp;
+            } else {
+                // Fallback
+                const fallbackPct = parseWattsPct(mainSet.on.watts || mainSet.watts);
+                targetWatts = (fallbackPct / 100) * userFtp;
+            }
+        } else if (mainSet.watts) {
+            const pct = parseWattsPct(mainSet.watts);
+            targetWatts = (pct / 100) * userFtp;
+        }
+
+        if (targetWatts) {
+            const actualWatts = lap.averageWatts || (lap.averageHeartrate ? lap.averageHeartrate * 1.5 : 0);
+            return getBufferedScore(targetWatts, actualWatts);
+        }
     }
 
     if (type === 'Swim') {
@@ -350,6 +558,13 @@ function parsePace(paceStr: string): number {
     const parts = paceStr.split(':');
     if (parts.length !== 2) return 300;
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
+function parseWattsPct(wattsStr: string): number {
+    if (!wattsStr) return 0;
+    // Extract first number from "105% FTP" or "88-90% FTP"
+    const match = wattsStr.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 0;
 }
 
 /**

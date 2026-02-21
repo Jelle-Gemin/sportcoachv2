@@ -21,7 +21,7 @@ export const weeklySchedule: AnyWorkout[] = [
         type: "Swim",
         completed: true,
         title: "Swim Tech",
-        description: "Catch-up met pull-buoy & steady sets.",
+        description: "8 x 25mCatch-up met pull-buoy & 12 x 50m steady sets.",
         duration: 2100,
         distance: 0.95,
         workout: {
@@ -118,7 +118,7 @@ export const weeklySchedule: AnyWorkout[] = [
         type: "Swim",
         completed: true,
         title: "Swim Endurance",
-        description: "Fist Drill & 10x50m @ RPE 7.",
+        description: "6 x 50mFist Drill & 10x50m @ RPE 7 met pull-buoy.",
         duration: 1800,
         distance: 0.7,
         workout: {
@@ -540,6 +540,21 @@ export const weeklySchedule: AnyWorkout[] = [
     } as ISoccerWorkout,
 
     // WEEK 4 — Specific Power & Tempo (26/01/2026 - 01/02/2026)
+
+    {
+        day: "Mon", date: "26", fullDate: "2026-01-26",
+        type: "Run", completed: false,
+        title: "Key Session: Run Quality",
+        description: "2x4km @ 4:15/km (rec: 1km EZ).",
+        duration: 3600,
+        workout: {
+            warmup: { time: 900 },
+            main: { distance: 4000, sets: 2, pace: "4:15/km", rest: 300 },
+            coolDown: { time: 300 }
+        }
+    } as IRunWorkout,
+
+
     {
         day: "Mon", date: "26", fullDate: "2026-01-26",
         type: "Swim", completed: false,
@@ -552,6 +567,8 @@ export const weeklySchedule: AnyWorkout[] = [
             main: { distance: 50, sets: 12, RPE: 7, rest: 15 }
         }
     } as ISwimWorkout,
+
+    // -------------------- TUE --------------------
     {
         day: "Tue", date: "27", fullDate: "2026-01-27",
         type: "Soccer", completed: false,
@@ -559,18 +576,8 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Regular training session.",
         duration: 5400
     } as ISoccerWorkout,
-    {
-        day: "Wed", date: "28", fullDate: "2026-01-28",
-        type: "Run", completed: false,
-        title: "Key Session: Run Quality",
-        description: "2x4km @ 4:15/km (rec: 1km EZ).",
-        duration: 3600,
-        workout: {
-            warmup: { time: 900 },
-            main: { distance: 4000, sets: 2, pace: "4:15/km", rest: 300 },
-            coolDown: { time: 300 }
-        }
-    } as IRunWorkout,
+
+    // -------------------- WED --------------------
     {
         day: "Wed", date: "28", fullDate: "2026-01-28",
         type: "Bike", completed: false,
@@ -583,6 +590,8 @@ export const weeklySchedule: AnyWorkout[] = [
             coolDown: { time: 300 }
         }
     } as IBikeWorkout,
+
+    // -------------------- THU --------------------
     {
         day: "Thu", date: "29", fullDate: "2026-01-29",
         type: "Soccer", completed: false,
@@ -590,6 +599,8 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Regular training session.",
         duration: 5400
     } as ISoccerWorkout,
+
+    // -------------------- FRI --------------------
     {
         day: "Fri", date: "30", fullDate: "2026-01-30",
         type: "Swim", completed: false,
@@ -602,6 +613,8 @@ export const weeklySchedule: AnyWorkout[] = [
             main: { distance: 50, sets: 15, RPE: 7, rest: 10, description: "met pull-buoy" }
         }
     } as ISwimWorkout,
+
+    // -------------------- SAT --------------------
     {
         day: "Sat", date: "31", fullDate: "2026-01-31",
         type: "Soccer", completed: false,
@@ -609,6 +622,8 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Weekly competition.",
         duration: 5400
     },
+
+    // -------------------- SUN --------------------
     {
         day: "Sun", date: "01", fullDate: "2026-02-01",
         type: "Run", completed: false,
@@ -621,6 +636,21 @@ export const weeklySchedule: AnyWorkout[] = [
     } as IRunWorkout,
 
     // WEEK 5 — Performance Peak (02/02/2026 - 08/02/2026)
+
+    // -------------------- MON --------------------
+    {
+        day: "Mon", date: "02", fullDate: "2026-02-02",
+        type: "Bike", completed: false,
+        title: "Key Session: Threshold Simulation",
+        description: "2x15 min @ 100% FTP (HR Z4, rec: 5' Z1).",
+        duration: 3000,
+        workout: {
+            warmup: { time: 600 },
+            main: { time: 900, sets: 2, watts: "100% FTP", rest: 300 },
+            coolDown: { time: 600 }
+        }
+    } as IBikeWorkout,
+
     {
         day: "Mon", date: "02", fullDate: "2026-02-02",
         type: "Swim", completed: false,
@@ -633,6 +663,8 @@ export const weeklySchedule: AnyWorkout[] = [
             main: { distance: 100, sets: 6, RPE: 8, rest: 25 }
         }
     } as ISwimWorkout,
+
+    // -------------------- TUE --------------------
     {
         day: "Tue", date: "03", fullDate: "2026-02-03",
         type: "Soccer", completed: false,
@@ -640,6 +672,8 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Regular training session.",
         duration: 5400
     },
+
+    // -------------------- WED --------------------
     {
         day: "Wed", date: "04", fullDate: "2026-02-04",
         type: "Run", completed: false,
@@ -652,18 +686,8 @@ export const weeklySchedule: AnyWorkout[] = [
             coolDown: { time: 600 }
         }
     } as IRunWorkout,
-    {
-        day: "Wed", date: "04", fullDate: "2026-02-04",
-        type: "Bike", completed: false,
-        title: "Key Session: Threshold Simulation",
-        description: "2x15 min @ 100% FTP (HR Z4, rec: 5' Z1).",
-        duration: 3000,
-        workout: {
-            warmup: { time: 600 },
-            main: { time: 900, sets: 2, watts: "100% FTP", rest: 300 },
-            coolDown: { time: 600 }
-        }
-    } as IBikeWorkout,
+
+    // -------------------- THU --------------------
     {
         day: "Thu", date: "05", fullDate: "2026-02-05",
         type: "Soccer", completed: false,
@@ -671,27 +695,24 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Regular training session.",
         duration: 5400
     },
+
+    // -------------------- FRI --------------------
     {
         day: "Fri", date: "06", fullDate: "2026-02-06",
         type: "Swim", completed: false,
         title: "Swim Performance",
-        description: "8x25m Fist Drill. 20x50m @ Race Pace RPE 8.",
+        description: "4x50m Fist Drill. 20x50m @ Race Pace RPE 8.",
         duration: 3000, distance: 1.3,
         workout: {
             warmup: { distance: 100 },
-            drill: { distance: 25, drill: "Fist Drill", sets: 8 },
+            drill: { distance: 50, drill: "Fist Drill", sets: 4 },
             main: { distance: 50, sets: 20, RPE: 8, rest: 15, description: "Race Pace" }
         }
     } as ISwimWorkout,
+
+    // -------------------- SAT --------------------
     {
         day: "Sat", date: "07", fullDate: "2026-02-07",
-        type: "Soccer", completed: false,
-        title: "Soccer Match",
-        description: "Weekly competition.",
-        duration: 5400
-    },
-    {
-        day: "Sun", date: "08", fullDate: "2026-02-08",
         type: "Bike", completed: false,
         title: "Big Brick (Bike Simulation)",
         description: "90 min @ 85% FTP.",
@@ -701,7 +722,7 @@ export const weeklySchedule: AnyWorkout[] = [
         }
     } as IBikeWorkout,
     {
-        day: "Sun", date: "08", fullDate: "2026-02-08",
+        day: "Sat", date: "07", fullDate: "2026-02-07",
         type: "Run", completed: false,
         title: "Big Brick (Run Simulation)",
         description: "30 min @ 4:25/km.",
@@ -711,7 +732,35 @@ export const weeklySchedule: AnyWorkout[] = [
         }
     } as IRunWorkout,
 
+    // -------------------- SUN --------------------
+
+
+    {
+        day: "Sun", date: "08", fullDate: "2026-02-08",
+        type: "Soccer", completed: false,
+        title: "Soccer Match",
+        description: "Weekly competition.",
+        duration: 5400
+    },
+
     // WEEK 6 — Maximale Adaptatie (09/02/2026 - 15/02/2026)
+
+    // -------------------- MON --------------------
+
+    {
+        day: "Mon", date: "09", fullDate: "2026-02-09",
+        type: "Run", completed: false,
+        title: "Key Session: Peak Intervals",
+        description: "4x2km @ 4:10/km.",
+        duration: 4200,
+        workout: {
+            warmup: { time: 900 },
+            main: { distance: 2000, sets: 4, pace: "4:10/km" },
+            coolDown: { time: 600 }
+        }
+    } as IRunWorkout,
+
+
     {
         day: "Mon", date: "09", fullDate: "2026-02-09",
         type: "Swim", completed: false,
@@ -724,6 +773,8 @@ export const weeklySchedule: AnyWorkout[] = [
             main: { distance: 50, sets: 10, RPE: 9, rest: 30, description: "FAST" }
         }
     } as ISwimWorkout,
+
+    // -------------------- TUE --------------------
     {
         day: "Tue", date: "10", fullDate: "2026-02-10",
         type: "Soccer", completed: false,
@@ -731,18 +782,9 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "Regular training session.",
         duration: 5400
     },
-    {
-        day: "Wed", date: "11", fullDate: "2026-02-11",
-        type: "Run", completed: false,
-        title: "Key Session: Peak Intervals",
-        description: "4x2km @ 4:10/km.",
-        duration: 4200,
-        workout: {
-            warmup: { time: 900 },
-            main: { distance: 2000, sets: 4, pace: "4:10/km" },
-            coolDown: { time: 600 }
-        }
-    } as IRunWorkout,
+
+    // -------------------- WED --------------------
+
     {
         day: "Wed", date: "11", fullDate: "2026-02-11",
         type: "Bike", completed: false,
@@ -751,17 +793,21 @@ export const weeklySchedule: AnyWorkout[] = [
         duration: 2700,
         workout: {
             warmup: { time: 600 },
-            main: { sets: 4, description: "2 min @ 95% / 2 min @ 110% FTP", on: { time: 120, watts: "95% FTP" }, off: { time: 120, watts: "110% FTP" }, rest: 300 },
+            main: { sets: 4, description: "2 min @ 95% / 2 min @ 110% FTP", on: { time: 120, watts: "95% FTP" }, off: { time: 120, watts: "110% FTP" }, rest: 0 },
             coolDown: { time: 420 }
         }
     } as IBikeOverUnderWorkout,
+
+    // -------------------- THU --------------------
     {
         day: "Thu", date: "12", fullDate: "2026-02-12",
         type: "Soccer", completed: false,
-        title: "Soccer Practice",
-        description: "Regular training session.",
+        title: "Soccer Match",
+        description: "Weekly competition",
         duration: 5400
     },
+
+    // -------------------- FRI --------------------
     {
         day: "Fri", date: "13", fullDate: "2026-02-13",
         type: "Swim", completed: false,
@@ -774,21 +820,26 @@ export const weeklySchedule: AnyWorkout[] = [
             main: { distance: 400, description: "Tijdrit non-stop met pull-buoy" }
         }
     } as ISwimWorkout,
+
+
+    // -------------------- SAT --------------------
     {
         day: "Sat", date: "14", fullDate: "2026-02-14",
-        type: "Soccer", completed: false,
-        title: "Soccer Match",
-        description: "Weekly competition.",
-        duration: 5400
-    },
-    {
-        day: "Sun", date: "15", fullDate: "2026-02-15",
         type: "Run", completed: false,
         title: "Key Session: Long Run (Peak Distance)",
         description: "18 km @ 5:20/km.",
         duration: 6000, distance: 18.0,
         workout: { main: { distance: 18000, pace: "5:20/km" } }
     } as IRunWorkout,
+
+    // -------------------- SUN --------------------
+    {
+        day: "Sun", date: "15", fullDate: "2026-02-15",
+        type: "Rest", completed: false,
+        title: "Rest",
+        description: "Rest day",
+        duration: 0
+    },
 
     // WEEK 7 — DELOAD / CONSOLIDATION (16/02/2026 - 22/02/2026)
     {
@@ -866,7 +917,7 @@ export const weeklySchedule: AnyWorkout[] = [
         description: "8 km @ 5:40/km (Z1).",
         duration: 2700, distance: 8.0,
         workout: {
-            main: { distance: 8000, pace: "5:40/km", hr_zones: ["Z1"] }
+            main: { distance: 8000, pace: "5:40/km", description: "Z1" }
         }
     } as IRunWorkout,
 ];
