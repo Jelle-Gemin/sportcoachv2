@@ -43,9 +43,6 @@ export async function POST(request: Request) {
             limit: 100
         });
 
-        // Build Sport Profile
-        const sportProfile = calculateSportProfile(pastActivities);
-
         // Filter for past planned workouts only
         const pastPlannedWorkouts = weeklySchedule.filter(w => new Date(w.fullDate) < today);
 
@@ -54,21 +51,6 @@ export async function POST(request: Request) {
         const workoutHistory = buildWorkoutHistory(pastPlannedWorkouts, pastActivities, ftp);
 
         const pastPerformanceContext: IPastPerformanceContext = {
-            sportSummary: {
-                swim: {
-                    avgPace: sportProfile.Swim.avgPace,
-                    totalDistance: sportProfile.Swim.totalDistance
-                },
-                bike: {
-                    avgWatts: sportProfile.Bike.avgWatts,
-                    avgSpeed: sportProfile.Bike.avgSpeed,
-                    totalDistance: sportProfile.Bike.totalDistance
-                },
-                run: {
-                    avgPace: sportProfile.Run.avgPace,
-                    totalDistance: sportProfile.Run.totalDistance
-                }
-            },
             workoutHistory
         };
 
@@ -84,46 +66,4 @@ export async function POST(request: Request) {
         console.error("Plan Generation Error:", error);
         return new NextResponse(error.message || "Internal Server Error", { status: 500 });
     }
-}
-
-function calculateSportProfile(activities: any[]) {
-    const profile = {
-        Swim: { totalDistance: 0, totalTime: 0, count: 0, avgPace: "N/A" },
-        Bike: { totalDistance: 0, totalTime: 0, totalWatts: 0, count: 0, avgSpeed: "N/A", avgWatts: "N/A" },
-        Run: { totalDistance: 0, totalTime: 0, count: 0, avgPace: "N/A" }
-    };
-
-    activities.forEach(act => {
-        const type = act.type === 'Ride' || act.type === 'VirtualRide' ? 'Bike' : act.type;
-        if (profile[type as keyof typeof profile]) {
-            const p = profile[type as keyof typeof profile] as any;
-            p.totalDistance += (act.manualDistance || act.distance);
-            p.totalTime += (act.manualMovingTime || act.movingTime);
-            p.count += 1;
-            if (type === 'Bike' && act.averageWatts) {
-                p.totalWatts += act.averageWatts;
-            }
-        }
-    });
-
-    if (profile.Swim.count > 0 && profile.Swim.totalDistance > 0) {
-        const paceSecs = (profile.Swim.totalTime / (profile.Swim.totalDistance / 100));
-        const mins = Math.floor(paceSecs / 60);
-        const secs = Math.round(paceSecs % 60);
-        profile.Swim.avgPace = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    if (profile.Bike.count > 0 && profile.Bike.totalTime > 0) {
-        profile.Bike.avgSpeed = ((profile.Bike.totalDistance / profile.Bike.totalTime) * 3.6).toFixed(1);
-        profile.Bike.avgWatts = Math.round(profile.Bike.totalWatts / profile.Bike.count).toString();
-    }
-
-    if (profile.Run.count > 0 && profile.Run.totalDistance > 0) {
-        const paceSecs = (profile.Run.totalTime / (profile.Run.totalDistance / 1000));
-        const mins = Math.floor(paceSecs / 60);
-        const secs = Math.round(paceSecs % 60);
-        profile.Run.avgPace = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    return profile;
 }

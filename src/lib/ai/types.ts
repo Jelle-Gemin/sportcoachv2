@@ -70,10 +70,5 @@ export interface ISportSummary {
  * Main container for past performance context
  */
 export interface IPastPerformanceContext {
-    sportSummary: {
-        swim: ISportSummary;
-        bike: ISportSummary;
-        run: ISportSummary;
-    };
     workoutHistory: IWorkoutMatch[];
 }
